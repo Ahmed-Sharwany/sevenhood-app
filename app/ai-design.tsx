@@ -25,9 +25,8 @@ import { supabase } from '@/lib/supabase';
 const REPLICATE_API_TOKEN: string =
   (Constants.expoConfig?.extra?.replicateApiToken as string) ?? '';
 
-// Use the latest version of the model automatically (no hardcoded version hash)
-const REPLICATE_MODEL_OWNER = 'adirik';
-const REPLICATE_MODEL_NAME  = 'interior-design';
+// adirik/interior-design — full SHA256 version hash
+const REPLICATE_MODEL_VERSION = '76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38';
 
 const STYLE_PRESETS = [
   { id: 'minimal',      label: 'Minimal',      color: '#E8E4DF', textColor: '#6B6B6B',
@@ -194,30 +193,27 @@ export default function AIDesignScreen() {
       const drillStr  = noDrill ? ', no drilling, no painting, renter-friendly changes only, removable décor' : '';
       const fullPrompt = `${roomStr}${styleObj.prompt}${drillStr}, photorealistic, high quality, 8k`;
 
-      // 3. Call Replicate (uses latest model version automatically)
+      // 3. Call Replicate with full version hash
       setStatusMsg('Sending to AI...');
-      const res = await fetch(
-        `https://api.replicate.com/v1/models/${REPLICATE_MODEL_OWNER}/${REPLICATE_MODEL_NAME}/predictions`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Token ${REPLICATE_API_TOKEN}`,
-            'Content-Type': 'application/json',
-            Prefer: 'wait',
+      const res = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Token ${REPLICATE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: REPLICATE_MODEL_VERSION,
+          input: {
+            image:               imageUrl,
+            prompt:              fullPrompt,
+            negative_prompt:     'ugly, blurry, low quality, deformed, text, watermark',
+            guidance_scale:      15,
+            num_inference_steps: 50,
+            strength:            0.8,
+            seed:                Math.floor(Math.random() * 1000000),
           },
-          body: JSON.stringify({
-            input: {
-              image:               imageUrl,
-              prompt:              fullPrompt,
-              negative_prompt:     'ugly, blurry, low quality, deformed, text, watermark',
-              guidance_scale:      15,
-              num_inference_steps: 50,
-              strength:            0.8,
-              seed:                Math.floor(Math.random() * 1000000),
-            },
-          }),
-        }
-      );
+        }),
+      });
 
       const prediction = await res.json();
       if (!prediction.id) throw new Error(prediction.detail ?? 'Failed to start prediction');
