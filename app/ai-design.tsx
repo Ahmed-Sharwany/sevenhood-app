@@ -25,8 +25,9 @@ import { supabase } from '@/lib/supabase';
 const REPLICATE_API_TOKEN: string =
   (Constants.expoConfig?.extra?.replicateApiToken as string) ?? '';
 
-// adirik/interior-design model — best for room redesign from photos
-const REPLICATE_MODEL_VERSION = '76604baddc85b1b4616e1a6475eca080da339c8f';
+// Use the latest version of the model automatically (no hardcoded version hash)
+const REPLICATE_MODEL_OWNER = 'adirik';
+const REPLICATE_MODEL_NAME  = 'interior-design';
 
 const STYLE_PRESETS = [
   { id: 'minimal',      label: 'Minimal',      color: '#E8E4DF', textColor: '#6B6B6B',
@@ -193,27 +194,30 @@ export default function AIDesignScreen() {
       const drillStr  = noDrill ? ', no drilling, no painting, renter-friendly changes only, removable décor' : '';
       const fullPrompt = `${roomStr}${styleObj.prompt}${drillStr}, photorealistic, high quality, 8k`;
 
-      // 3. Call Replicate
+      // 3. Call Replicate (uses latest model version automatically)
       setStatusMsg('Sending to AI...');
-      const res = await fetch('https://api.replicate.com/v1/predictions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Token ${REPLICATE_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          version: REPLICATE_MODEL_VERSION,
-          input: {
-            image:               imageUrl,
-            prompt:              fullPrompt,
-            negative_prompt:     'ugly, blurry, low quality, deformed, text, watermark',
-            guidance_scale:      15,
-            num_inference_steps: 50,
-            strength:            0.8,
-            seed:                Math.floor(Math.random() * 1000000),
+      const res = await fetch(
+        `https://api.replicate.com/v1/models/${REPLICATE_MODEL_OWNER}/${REPLICATE_MODEL_NAME}/predictions`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Token ${REPLICATE_API_TOKEN}`,
+            'Content-Type': 'application/json',
+            Prefer: 'wait',
           },
-        }),
-      });
+          body: JSON.stringify({
+            input: {
+              image:               imageUrl,
+              prompt:              fullPrompt,
+              negative_prompt:     'ugly, blurry, low quality, deformed, text, watermark',
+              guidance_scale:      15,
+              num_inference_steps: 50,
+              strength:            0.8,
+              seed:                Math.floor(Math.random() * 1000000),
+            },
+          }),
+        }
+      );
 
       const prediction = await res.json();
       if (!prediction.id) throw new Error(prediction.detail ?? 'Failed to start prediction');
@@ -305,25 +309,32 @@ export default function AIDesignScreen() {
           {/* ── Photo upload ── */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>Room Photo</Text>
-            <Text style={styles.fieldSub}>Upload or take a photo of the room you want to redesign</Text>
 
             {photos.length === 0 ? (
-              <View style={styles.photoActions}>
-                <TouchableOpacity style={styles.photoActionBtn} onPress={pickPhoto} activeOpacity={0.8}>
-                  <Text style={styles.photoActionIcon}>🖼️</Text>
-                  <Text style={styles.photoActionLabel}>Choose from Library</Text>
+              <>
+                {/* Primary: Camera */}
+                <TouchableOpacity style={styles.cameraSlot} onPress={takePhoto} activeOpacity={0.85}>
+                  <Camera size={36} color={COLORS.primary} strokeWidth={1.5} />
+                  <Text style={styles.cameraSlotTitle}>Take a Photo</Text>
+                  <Text style={styles.cameraSlotSub}>Point your camera at the room</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.photoActionBtn} onPress={takePhoto} activeOpacity={0.8}>
-                  <Camera size={22} color={COLORS.primary} strokeWidth={1.5} />
-                  <Text style={styles.photoActionLabel}>Take Photo</Text>
+                {/* Secondary: Library */}
+                <TouchableOpacity onPress={pickPhoto} activeOpacity={0.7} style={styles.libraryLink}>
+                  <Text style={styles.libraryLinkText}>Or choose from photo library</Text>
                 </TouchableOpacity>
-              </View>
+              </>
             ) : (
               <View style={styles.photoPreviewWrap}>
                 <Image source={{ uri: photos[0] }} style={styles.photoPreview} />
                 <TouchableOpacity style={styles.removePhotoBtn} onPress={removePhoto} activeOpacity={0.8}>
                   <X size={14} color="#fff" strokeWidth={2.5} />
                 </TouchableOpacity>
+                <View style={styles.retakeOverlay}>
+                  <TouchableOpacity style={styles.retakeBtn} onPress={takePhoto} activeOpacity={0.8}>
+                    <Camera size={14} color="#fff" strokeWidth={2} />
+                    <Text style={styles.retakeBtnText}>Retake</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </View>
@@ -495,16 +506,35 @@ const styles = StyleSheet.create({
   resultBtnText: { color: COLORS.primary, fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
 
   // Photo
-  photoActions: { flexDirection: 'row', gap: 12 },
-  photoActionBtn: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10,
-    paddingVertical: 24, borderRadius: 18,
+  cameraSlot: {
+    alignItems: 'center', justifyContent: 'center', gap: 10,
+    paddingVertical: 36, borderRadius: 20,
     backgroundColor: COLORS.surface, borderWidth: 2,
-    borderColor: COLORS.border, borderStyle: 'dashed',
+    borderColor: COLORS.primary + '30', borderStyle: 'dashed',
   },
-  photoActionIcon: { fontSize: 24 },
-  photoActionLabel: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  cameraSlotTitle: {
+    color: COLORS.primary, fontSize: 16, fontFamily: 'DMSans_600SemiBold',
+  },
+  cameraSlotSub: {
+    color: COLORS.textTertiary, fontSize: 13, fontFamily: 'DMSans_400Regular',
+  },
+  libraryLink: {
+    alignItems: 'center', paddingVertical: 12,
+  },
+  libraryLinkText: {
+    color: COLORS.accent, fontSize: 13, fontFamily: 'DMSans_500Medium',
+    textDecorationLine: 'underline',
+  },
   photoPreviewWrap: { position: 'relative' },
+  retakeOverlay: {
+    position: 'absolute', bottom: 10, left: 10,
+  },
+  retakeBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  retakeBtnText: { color: '#fff', fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
   photoPreview: {
     width: '100%', aspectRatio: 4 / 3,
     borderRadius: 18, backgroundColor: COLORS.border,
