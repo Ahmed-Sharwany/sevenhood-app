@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Sevenhood",
+    "slug": "sevenhood-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#0D2818"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sevenhood.resident",
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0D2818"
+      },
+      "package": "com.sevenhood.resident"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "scheme": "sevenhood",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
