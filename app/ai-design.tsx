@@ -17,12 +17,13 @@ import { ArrowLeft, Camera, Sparkles, X, Download, RefreshCw } from 'lucide-reac
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
+import Constants from 'expo-constants';
 import { COLORS } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
 
-// ── Replicate config ──────────────────────────────────────────────────────────
-// Get your free API token at: https://replicate.com/account/api-tokens
-const REPLICATE_API_TOKEN = 'YOUR_REPLICATE_TOKEN_HERE';
+// ── Replicate config (token stored in .env, never committed to git) ───────────
+const REPLICATE_API_TOKEN: string =
+  (Constants.expoConfig?.extra?.replicateApiToken as string) ?? '';
 
 // adirik/interior-design model — best for room redesign from photos
 const REPLICATE_MODEL_VERSION = '76604baddc85b1b4616e1a6475eca080da339c8f';
