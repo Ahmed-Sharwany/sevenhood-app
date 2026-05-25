@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,13 +17,12 @@ import {
   FileText,
   CheckCircle,
   Clock,
-  AlertCircle,
   Plus,
-  Camera,
-  ChevronRight,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { COLORS, IMG } from '@/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const TABS = ['Overview', 'Contracts', 'Payments', 'Warranties', 'Snags', 'Drawings'];
 
@@ -120,6 +118,33 @@ const wbStyles = StyleSheet.create({
 
 export default function PropertyScreen() {
   const [activeTab, setActiveTab] = useState(0);
+  const { resident } = useAuth();
+  const [amenities, setAmenities] = useState<string[]>([]);
+
+  const unit     = resident?.units as any;
+  const building = unit?.buildings as any;
+  const project  = building?.projects as any;
+
+  // Fetch amenities for this building
+  useEffect(() => {
+    if (!building?.id) return;
+    supabase
+      .from('amenities')
+      .select('name, icon')
+      .eq('building_id', building.id)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setAmenities(data.map((a: any) => `${a.icon ?? '🏢'} ${a.name}`));
+        }
+      });
+  }, [building?.id]);
+
+  // Build header info from real data
+  const heroImage   = building?.image_url ?? IMG.buildingDusk;
+  const unitTitle   = unit ? `Unit ${unit.unit_number}` : 'My Unit';
+  const unitAddress = building ? `${building.name} — ${project?.name ?? ''}` : 'Sevenhood';
+  const floorStr    = unit?.floor ? `Floor ${unit.floor}` : '';
+  const locationStr = project?.location ?? '';
 
   return (
     <View style={styles.container}>
@@ -127,7 +152,7 @@ export default function PropertyScreen() {
 
       {/* Header image */}
       <View style={styles.headerImg}>
-        <Image source={{ uri: IMG.buildingDusk }} style={styles.heroImage} resizeMode="cover" />
+        <Image source={{ uri: heroImage }} style={styles.heroImage} resizeMode="cover" />
         <LinearGradient
           colors={['rgba(10,22,40,0.5)', 'rgba(10,22,40,0.3)', 'transparent']}
           style={StyleSheet.absoluteFill}
@@ -144,17 +169,17 @@ export default function PropertyScreen() {
           <View style={styles.unitInfo}>
             <View style={styles.liveBadge}>
               <View style={styles.liveDot} />
-              <Text style={styles.liveText}>Live</Text>
+              <Text style={styles.liveText}>Resident</Text>
             </View>
-            <Text style={styles.unitTitle}>3BR Luxury Apartment</Text>
-            <Text style={styles.unitAddr}>Sevenhood Tower — Unit 12B</Text>
-            <View style={styles.unitMeta}>
-              <Text style={styles.metaItem}>Floor 12</Text>
-              <Text style={styles.metaDot}>·</Text>
-              <Text style={styles.metaItem}>Downtown District</Text>
-              <Text style={styles.metaDot}>·</Text>
-              <Text style={styles.metaItem}>2,450 sqft</Text>
-            </View>
+            <Text style={styles.unitTitle}>{unitTitle}</Text>
+            <Text style={styles.unitAddr}>{unitAddress}</Text>
+            {(floorStr || locationStr) && (
+              <View style={styles.unitMeta}>
+                {floorStr ? <Text style={styles.metaItem}>{floorStr}</Text> : null}
+                {floorStr && locationStr ? <Text style={styles.metaDot}>·</Text> : null}
+                {locationStr ? <Text style={styles.metaItem}>{locationStr}</Text> : null}
+              </View>
+            )}
           </View>
         </SafeAreaView>
       </View>
@@ -181,7 +206,7 @@ export default function PropertyScreen() {
 
       {/* Tab content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {activeTab === 0 && <OverviewTab />}
+        {activeTab === 0 && <OverviewTab unit={unit} building={building} project={project} amenities={amenities} />}
         {activeTab === 1 && <ContractsTab />}
         {activeTab === 2 && <PaymentsTab />}
         {activeTab === 3 && <WarrantiesTab />}
@@ -192,17 +217,23 @@ export default function PropertyScreen() {
   );
 }
 
-function OverviewTab() {
+function OverviewTab({ unit, building, project, amenities }: {
+  unit: any; building: any; project: any; amenities: string[];
+}) {
   const details = [
-    { label: 'Unit Number', value: '12B' },
-    { label: 'Tower', value: 'Sevenhood Tower A' },
-    { label: 'Type', value: '3 Bedroom' },
-    { label: 'Floor', value: '12th Floor' },
-    { label: 'Area', value: '2,450 sqft' },
-    { label: 'Handover', value: 'March 2023' },
-    { label: 'Status', value: 'Live' },
-    { label: 'Parking', value: '2 Bays' },
-  ];
+    { label: 'Unit Number',  value: unit?.unit_number ?? '—' },
+    { label: 'Building',     value: building?.name ?? '—' },
+    { label: 'Project',      value: project?.name ?? '—' },
+    { label: 'Floor',        value: unit?.floor != null ? `${unit.floor}th Floor` : '—' },
+    { label: 'Tower',        value: unit?.tower ?? '—' },
+    { label: 'Location',     value: project?.location ?? '—' },
+    { label: 'Total Floors', value: building?.floors != null ? `${building.floors} Floors` : '—' },
+    { label: 'Total Units',  value: building?.units_count != null ? `${building.units_count} Units` : '—' },
+  ].filter(d => d.value !== '—');
+
+  const displayAmenities = amenities.length > 0
+    ? amenities
+    : ['🏊 Pool', '🏋️ Gym', '🧖 Spa', '🏢 Concierge', '🚗 Parking', '🌿 Gardens'];
 
   return (
     <View style={tabStyles.container}>
@@ -216,7 +247,7 @@ function OverviewTab() {
 
       <Text style={[tabStyles.sectionTitle, { marginTop: 28 }]}>Building Amenities</Text>
       <View style={tabStyles.amenitiesGrid}>
-        {['🏊 Pool', '🏋️ Gym', '🧖 Spa', '🏢 Concierge', '🚗 Parking', '🌿 Gardens'].map((a) => (
+        {displayAmenities.map((a) => (
           <View key={a} style={tabStyles.amenityChip}>
             <Text style={tabStyles.amenityText}>{a}</Text>
           </View>

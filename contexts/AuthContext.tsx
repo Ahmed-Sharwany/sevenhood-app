@@ -14,6 +14,9 @@ export type Building = {
   id: string;
   name: string;
   project_id: string;
+  image_url: string | null;
+  floors: number | null;
+  units_count: number | null;
   projects: Project;
 };
 
@@ -55,7 +58,7 @@ async function fetchResident(email: string): Promise<Resident | null> {
   const { data, error } = await supabase
     .from('residents')
     .select(
-      '*, units(id, unit_number, floor, tower, building_id, buildings(id, name, project_id, projects(id, name, location)))'
+      '*, units(id, unit_number, floor, tower, building_id, buildings(id, name, image_url, floors, units_count, project_id, projects(id, name, location)))'
     )
     .eq('email', email)
     .maybeSingle();
