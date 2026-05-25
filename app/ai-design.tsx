@@ -1,55 +1,246 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { ArrowLeft, Camera, Sparkles } from 'lucide-react-native';
+import { ArrowLeft, Camera, Sparkles, X, Download, RefreshCw } from 'lucide-react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '@/constants/colors';
+import { supabase } from '@/lib/supabase';
+
+// ── Replicate config ──────────────────────────────────────────────────────────
+// Get your free API token at: https://replicate.com/account/api-tokens
+const REPLICATE_API_TOKEN = 'YOUR_REPLICATE_TOKEN_HERE';
+
+// adirik/interior-design model — best for room redesign from photos
+const REPLICATE_MODEL_VERSION = '76604baddc85b1b4616e1a6475eca080da339c8f';
 
 const STYLE_PRESETS = [
-  { id: 'minimal',       label: 'Minimal',      color: '#E8E4DF', textColor: '#6B6B6B' },
-  { id: 'modern_arab',   label: 'Modern Arab',  color: '#1E5435', textColor: '#FFFFFF' },
-  { id: 'boho',          label: 'Boho',         color: '#C4956A', textColor: '#FFFFFF' },
-  { id: 'warm_neutral',  label: 'Warm Neutral', color: '#D4B896', textColor: '#5C4A3A' },
-  { id: 'scandinavian',  label: 'Scandi',       color: '#B8C9D4', textColor: '#2C3E50' },
-  { id: 'maximalist',    label: 'Maximalist',   color: '#4A1A6B', textColor: '#FFFFFF' },
+  { id: 'minimal',      label: 'Minimal',      color: '#E8E4DF', textColor: '#6B6B6B',
+    prompt: 'minimalist interior design, clean lines, neutral tones, white walls, sparse furniture, natural light, Japandi style' },
+  { id: 'modern_arab',  label: 'Modern Arab',  color: '#1E5435', textColor: '#FFFFFF',
+    prompt: 'modern Arabic interior design, luxury arabesque geometric patterns, dark walnut wood, deep green and gold accents, ornate ceiling, mashrabiya screens' },
+  { id: 'boho',         label: 'Boho',         color: '#C4956A', textColor: '#FFFFFF',
+    prompt: 'bohemian interior design, warm earthy tones, rattan furniture, macramé wall art, layered rugs, indoor plants, cozy atmosphere' },
+  { id: 'warm_neutral', label: 'Warm Neutral', color: '#D4B896', textColor: '#5C4A3A',
+    prompt: 'warm neutral interior, beige and cream palette, soft textures, linen fabrics, wooden accents, hygge style, cozy and inviting' },
+  { id: 'scandinavian', label: 'Scandi',       color: '#B8C9D4', textColor: '#2C3E50',
+    prompt: 'Scandinavian interior design, functional minimalism, white and light grey, blonde wood, clean lines, cozy hygge elements' },
+  { id: 'maximalist',   label: 'Maximalist',   color: '#4A1A6B', textColor: '#FFFFFF',
+    prompt: 'maximalist interior design, bold colors, layered patterns, rich jewel tones, velvet furniture, gallery walls, luxurious and eclectic' },
 ];
 
-const BUDGET_MIN = 5000;
-const BUDGET_MAX = 50000;
+const ROOM_EMOJIS: Record<string, string> = {
+  'Living Room': '🛋️', 'Bedroom': '🛏️', 'Kitchen': '🍳',
+  'Bathroom': '🚿', 'Study': '📚', 'Dining': '🍽️',
+};
+
+const { width: SCREEN_W } = Dimensions.get('window');
 
 export default function AIDesignScreen() {
-  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [budgetPct, setBudgetPct] = useState(0.3);
-  const [noDrill, setNoDrill] = useState(false);
-  const [photoSlots, setPhotoSlots] = useState<boolean[]>([false, false, false, false]);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedStyle, setSelectedStyle]   = useState<string | null>(null);
+  const [selectedRoom, setSelectedRoom]     = useState<string | null>(null);
+  const [noDrill, setNoDrill]               = useState(false);
+  const [photos, setPhotos]                 = useState<string[]>([]);   // local URIs
+  const [generating, setGenerating]         = useState(false);
+  const [generatedUrl, setGeneratedUrl]     = useState<string | null>(null);
+  const [statusMsg, setStatusMsg]           = useState('');
+  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const budget = Math.round(BUDGET_MIN + (BUDGET_MAX - BUDGET_MIN) * budgetPct);
-  const budgetFormatted = `AED ${budget.toLocaleString()}`;
-
-  const addPhoto = (idx: number) => {
+  // ── Photo picker ─────────────────────────────────────────────────────────
+  const pickPhoto = async () => {
+    if (photos.length >= 1) {
+      Alert.alert('One photo at a time', 'Remove the current photo before adding another.');
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const newSlots = [...photoSlots];
-    newSlots[idx] = !newSlots[idx];
-    setPhotoSlots(newSlots);
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please allow access to your photo library in Settings.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setPhotos([result.assets[0].uri]);
+      setGeneratedUrl(null);
+    }
   };
 
-  const handleGenerate = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 2500);
+  const takePhoto = async () => {
+    if (photos.length >= 1) {
+      Alert.alert('One photo at a time', 'Remove the current photo before adding another.');
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please allow camera access in Settings.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setPhotos([result.assets[0].uri]);
+      setGeneratedUrl(null);
+    }
   };
 
+  const removePhoto = () => {
+    setPhotos([]);
+    setGeneratedUrl(null);
+  };
+
+  // ── Upload to Supabase Storage ────────────────────────────────────────────
+  const uploadToSupabase = async (uri: string): Promise<string> => {
+    setStatusMsg('Uploading photo...');
+    const response = await fetch(uri);
+    const blob     = await response.blob();
+    const fileName = `ai-design/${Date.now()}.jpg`;
+
+    const { error } = await supabase.storage
+      .from('images')
+      .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
+
+    if (error) throw new Error(`Upload failed: ${error.message}`);
+
+    const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
+  // ── Poll Replicate until done ─────────────────────────────────────────────
+  const pollPrediction = async (predictionId: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const check = async () => {
+        try {
+          const res  = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+            headers: { Authorization: `Token ${REPLICATE_API_TOKEN}` },
+          });
+          const data = await res.json();
+
+          if (data.status === 'succeeded') {
+            const output = Array.isArray(data.output) ? data.output[0] : data.output;
+            resolve(output);
+          } else if (data.status === 'failed' || data.status === 'canceled') {
+            reject(new Error(data.error ?? 'Generation failed'));
+          } else {
+            setStatusMsg(`Generating design... (${data.status})`);
+            pollRef.current = setTimeout(check, 3000);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      };
+      check();
+    });
+  };
+
+  // ── Main generate function ────────────────────────────────────────────────
+  const handleGenerate = async () => {
+    if (!photos[0]) {
+      Alert.alert('Add a photo', 'Please upload a photo of your room first.');
+      return;
+    }
+    if (!selectedStyle) {
+      Alert.alert('Choose a style', 'Please select a design style.');
+      return;
+    }
+    if (REPLICATE_API_TOKEN === 'YOUR_REPLICATE_TOKEN_HERE') {
+      Alert.alert(
+        'API Token Missing',
+        'Add your Replicate API token in app/ai-design.tsx to enable AI generation.\n\nGet one free at replicate.com',
+      );
+      return;
+    }
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setGenerating(true);
+    setGeneratedUrl(null);
+
+    try {
+      // 1. Upload photo
+      const imageUrl = await uploadToSupabase(photos[0]);
+
+      // 2. Build prompt
+      const styleObj  = STYLE_PRESETS.find(s => s.id === selectedStyle)!;
+      const roomStr   = selectedRoom ? `${selectedRoom.toLowerCase()}, ` : '';
+      const drillStr  = noDrill ? ', no drilling, no painting, renter-friendly changes only, removable décor' : '';
+      const fullPrompt = `${roomStr}${styleObj.prompt}${drillStr}, photorealistic, high quality, 8k`;
+
+      // 3. Call Replicate
+      setStatusMsg('Sending to AI...');
+      const res = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Token ${REPLICATE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: REPLICATE_MODEL_VERSION,
+          input: {
+            image:               imageUrl,
+            prompt:              fullPrompt,
+            negative_prompt:     'ugly, blurry, low quality, deformed, text, watermark',
+            guidance_scale:      15,
+            num_inference_steps: 50,
+            strength:            0.8,
+            seed:                Math.floor(Math.random() * 1000000),
+          },
+        }),
+      });
+
+      const prediction = await res.json();
+      if (!prediction.id) throw new Error(prediction.detail ?? 'Failed to start prediction');
+
+      // 4. Poll for result
+      const outputUrl = await pollPrediction(prediction.id);
+      setGeneratedUrl(outputUrl);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setStatusMsg('');
+    } catch (err: any) {
+      Alert.alert('Generation failed', err.message ?? 'Please try again.');
+      setStatusMsg('');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const resetAll = () => {
+    setPhotos([]);
+    setGeneratedUrl(null);
+    setSelectedStyle(null);
+    setSelectedRoom(null);
+    setNoDrill(false);
+    setStatusMsg('');
+    if (pollRef.current) clearTimeout(pollRef.current);
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -68,50 +259,75 @@ export default function AIDesignScreen() {
       </SafeAreaView>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Hero banner */}
+        {/* Hero */}
         <LinearGradient
           colors={[COLORS.primary, COLORS.primaryLight]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={styles.heroBanner}
         >
           <Sparkles size={32} color={COLORS.accent} strokeWidth={1.5} />
           <Text style={styles.heroTitle}>Transform Your Space</Text>
           <Text style={styles.heroSub}>
-            Upload photos of your rooms and let our AI generate personalized interior designs tailored to your style and budget.
+            Upload a photo of your room and let AI redesign it in your chosen style — in under a minute.
           </Text>
         </LinearGradient>
 
         <View style={styles.pad}>
-          {/* Photo upload */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Upload Room Photos</Text>
-            <Text style={styles.fieldSub}>Add up to 4 photos of the room you want to redesign</Text>
-            <View style={styles.photoGrid}>
-              {photoSlots.map((filled, idx) => (
+
+          {/* ── Result ── */}
+          {generatedUrl && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultLabel}>✨ Your AI Design</Text>
+              <View style={styles.beforeAfterRow}>
+                <View style={styles.beforeAfterItem}>
+                  <Text style={styles.beforeAfterCaption}>BEFORE</Text>
+                  <Image source={{ uri: photos[0] }} style={styles.beforeAfterImage} />
+                </View>
+                <View style={styles.beforeAfterItem}>
+                  <Text style={styles.beforeAfterCaption}>AFTER</Text>
+                  <Image source={{ uri: generatedUrl }} style={styles.beforeAfterImage} />
+                </View>
+              </View>
+              <View style={styles.resultActions}>
                 <TouchableOpacity
-                  key={idx}
-                  onPress={() => addPhoto(idx)}
-                  style={[styles.photoSlot, filled && styles.photoSlotFilled]}
+                  style={styles.resultBtn}
+                  onPress={resetAll}
                   activeOpacity={0.8}
                 >
-                  {filled ? (
-                    <View style={styles.photoFilled}>
-                      <Text style={styles.photoFilledIcon}>🖼️</Text>
-                      <Text style={styles.photoFilledText}>Tap to remove</Text>
-                    </View>
-                  ) : (
-                    <>
-                      <Camera size={24} color={COLORS.textTertiary} strokeWidth={1.5} />
-                      <Text style={styles.photoAddText}>Add Photo</Text>
-                    </>
-                  )}
+                  <RefreshCw size={16} color={COLORS.primary} strokeWidth={2} />
+                  <Text style={styles.resultBtnText}>New Design</Text>
                 </TouchableOpacity>
-              ))}
+              </View>
             </View>
+          )}
+
+          {/* ── Photo upload ── */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Room Photo</Text>
+            <Text style={styles.fieldSub}>Upload or take a photo of the room you want to redesign</Text>
+
+            {photos.length === 0 ? (
+              <View style={styles.photoActions}>
+                <TouchableOpacity style={styles.photoActionBtn} onPress={pickPhoto} activeOpacity={0.8}>
+                  <Text style={styles.photoActionIcon}>🖼️</Text>
+                  <Text style={styles.photoActionLabel}>Choose from Library</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.photoActionBtn} onPress={takePhoto} activeOpacity={0.8}>
+                  <Camera size={22} color={COLORS.primary} strokeWidth={1.5} />
+                  <Text style={styles.photoActionLabel}>Take Photo</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.photoPreviewWrap}>
+                <Image source={{ uri: photos[0] }} style={styles.photoPreview} />
+                <TouchableOpacity style={styles.removePhotoBtn} onPress={removePhoto} activeOpacity={0.8}>
+                  <X size={14} color="#fff" strokeWidth={2.5} />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
-          {/* Style presets */}
+          {/* ── Style presets ── */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>Design Style</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.styleScroll}>
@@ -135,44 +351,7 @@ export default function AIDesignScreen() {
             </ScrollView>
           </View>
 
-          {/* Budget slider */}
-          <View style={styles.fieldGroup}>
-            <View style={styles.budgetHeader}>
-              <Text style={styles.fieldLabel}>Budget Range</Text>
-              <Text style={styles.budgetValue}>{budgetFormatted}</Text>
-            </View>
-            <View style={styles.sliderTrack}>
-              <View style={[styles.sliderFill, { width: `${budgetPct * 100}%` }]} />
-              <TouchableOpacity
-                style={[styles.sliderThumb, { left: `${Math.max(0, budgetPct * 100 - 3)}%` as any }]}
-                onPress={() => {}}
-              />
-            </View>
-            <View style={styles.budgetRange}>
-              <Text style={styles.budgetMin}>AED 5,000</Text>
-              <Text style={styles.budgetMax}>AED 50,000</Text>
-            </View>
-          </View>
-
-          {/* Rental constraints toggle */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Rental Constraints</Text>
-            <TouchableOpacity
-              onPress={() => { setNoDrill(!noDrill); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-              style={[styles.toggleRow, noDrill && styles.toggleRowActive]}
-              activeOpacity={0.8}
-            >
-              <View>
-                <Text style={styles.toggleLabel}>No drilling or painting</Text>
-                <Text style={styles.toggleSub}>Limit suggestions to renter-friendly changes</Text>
-              </View>
-              <View style={[styles.toggleSwitch, noDrill && styles.toggleSwitchActive]}>
-                <View style={[styles.toggleKnob, noDrill && styles.toggleKnobActive]} />
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {/* Additional options */}
+          {/* ── Room type ── */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>Room Type</Text>
             <View style={styles.roomGrid}>
@@ -183,26 +362,48 @@ export default function AIDesignScreen() {
                   style={[styles.roomChip, selectedRoom === room && styles.roomChipActive]}
                   activeOpacity={0.7}
                 >
+                  <Text style={styles.roomEmoji}>{ROOM_EMOJIS[room]}</Text>
                   <Text style={[styles.roomChipText, selectedRoom === room && styles.roomChipTextActive]}>{room}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
-          {/* Generate button */}
+          {/* ── Rental constraints ── */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Rental Constraints</Text>
+            <TouchableOpacity
+              onPress={() => { setNoDrill(!noDrill); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+              style={[styles.toggleRow, noDrill && styles.toggleRowActive]}
+              activeOpacity={0.8}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.toggleLabel}>No drilling or painting</Text>
+                <Text style={styles.toggleSub}>Limit to renter-friendly changes</Text>
+              </View>
+              <View style={[styles.toggleSwitch, noDrill && styles.toggleSwitchActive]}>
+                <View style={[styles.toggleKnob, noDrill && styles.toggleKnobActive]} />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* ── Generate button ── */}
           <TouchableOpacity
             onPress={handleGenerate}
-            style={styles.generateBtn}
+            style={[styles.generateBtn, generating && styles.generateBtnDisabled]}
             activeOpacity={0.9}
+            disabled={generating}
           >
             <LinearGradient
-              colors={[COLORS.accent, COLORS.accentLight]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              colors={generating ? ['#999', '#bbb'] : [COLORS.accent, COLORS.accentLight]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               style={styles.generateGradient}
             >
-              {isGenerating ? (
-                <Text style={styles.generateText}>✨ Generating your design...</Text>
+              {generating ? (
+                <>
+                  <ActivityIndicator size="small" color="#fff" />
+                  <Text style={styles.generateText}>{statusMsg || 'Generating...'}</Text>
+                </>
               ) : (
                 <>
                   <Sparkles size={20} color="#fff" strokeWidth={2} />
@@ -213,7 +414,7 @@ export default function AIDesignScreen() {
           </TouchableOpacity>
 
           <Text style={styles.disclaimer}>
-            AI designs are generated in approximately 30–60 seconds. Results are for inspiration purposes.
+            AI designs generate in ~30–60 seconds. Results are for inspiration purposes.
           </Text>
         </View>
         <View style={{ height: 40 }} />
@@ -225,241 +426,158 @@ export default function AIDesignScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 20, paddingVertical: 16,
     backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 40, height: 40, borderRadius: 14,
     backgroundColor: COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
   },
   title: {
-    flex: 1,
-    color: COLORS.primary,
-    fontSize: 18,
-    fontFamily: 'CormorantGaramond_700Bold',
-    textAlign: 'center',
+    flex: 1, color: COLORS.primary, fontSize: 18,
+    fontFamily: 'CormorantGaramond_700Bold', textAlign: 'center',
   },
-  heroBanner: {
-    padding: 28,
-    alignItems: 'center',
-    gap: 12,
-  },
+  heroBanner: { padding: 28, alignItems: 'center', gap: 12 },
   heroTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontFamily: 'CormorantGaramond_700Bold',
-    textAlign: 'center',
+    color: '#fff', fontSize: 24,
+    fontFamily: 'CormorantGaramond_700Bold', textAlign: 'center',
   },
   heroSub: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
-    textAlign: 'center',
-    lineHeight: 22,
-    maxWidth: 300,
+    color: 'rgba(255,255,255,0.75)', fontSize: 14,
+    fontFamily: 'DMSans_400Regular', textAlign: 'center',
+    lineHeight: 22, maxWidth: 300,
   },
   pad: { padding: 20 },
   fieldGroup: { marginBottom: 28 },
   fieldLabel: {
-    color: COLORS.primary,
-    fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    marginBottom: 6,
+    color: COLORS.primary, fontSize: 12,
+    fontFamily: 'DMSans_600SemiBold', letterSpacing: 0.8,
+    textTransform: 'uppercase', marginBottom: 6,
   },
   fieldSub: {
-    color: COLORS.textTertiary,
-    fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
-    marginBottom: 14,
+    color: COLORS.textTertiary, fontSize: 13,
+    fontFamily: 'DMSans_400Regular', marginBottom: 14,
   },
-  photoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+
+  // Result
+  resultCard: {
+    backgroundColor: COLORS.surface, borderRadius: 20,
+    borderWidth: 1.5, borderColor: COLORS.accent + '40',
+    padding: 16, marginBottom: 28,
+    shadowColor: COLORS.accent, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12, shadowRadius: 12, elevation: 4,
   },
-  photoSlot: {
-    width: '47%',
-    aspectRatio: 1.5,
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    borderStyle: 'dashed',
+  resultLabel: {
+    color: COLORS.accent, fontSize: 14,
+    fontFamily: 'DMSans_600SemiBold', marginBottom: 14,
   },
-  photoSlotFilled: {
-    borderColor: COLORS.accent,
-    borderStyle: 'solid',
-    backgroundColor: '#FFFBF5',
+  beforeAfterRow: { flexDirection: 'row', gap: 10 },
+  beforeAfterItem: { flex: 1 },
+  beforeAfterCaption: {
+    color: COLORS.textTertiary, fontSize: 10,
+    fontFamily: 'DMSans_600SemiBold', letterSpacing: 1,
+    marginBottom: 6, textAlign: 'center',
   },
-  photoFilled: { alignItems: 'center', gap: 4 },
-  photoFilledIcon: { fontSize: 28 },
-  photoFilledText: { color: COLORS.accent, fontSize: 11, fontFamily: 'DMSans_500Medium' },
-  photoAddText: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
+  beforeAfterImage: {
+    width: '100%', aspectRatio: 4 / 3,
+    borderRadius: 12, backgroundColor: COLORS.border,
+  },
+  resultActions: { flexDirection: 'row', gap: 10, marginTop: 14 },
+  resultBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 12, borderRadius: 14,
+    backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border,
+  },
+  resultBtnText: { color: COLORS.primary, fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+
+  // Photo
+  photoActions: { flexDirection: 'row', gap: 12 },
+  photoActionBtn: {
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10,
+    paddingVertical: 24, borderRadius: 18,
+    backgroundColor: COLORS.surface, borderWidth: 2,
+    borderColor: COLORS.border, borderStyle: 'dashed',
+  },
+  photoActionIcon: { fontSize: 24 },
+  photoActionLabel: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  photoPreviewWrap: { position: 'relative' },
+  photoPreview: {
+    width: '100%', aspectRatio: 4 / 3,
+    borderRadius: 18, backgroundColor: COLORS.border,
+  },
+  removePhotoBtn: {
+    position: 'absolute', top: 10, right: 10,
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+
+  // Styles
   styleScroll: { marginHorizontal: -4 },
   styleCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    gap: 8,
-    marginHorizontal: 4,
-    width: 90,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    backgroundColor: COLORS.surface, borderRadius: 16,
+    padding: 16, alignItems: 'center', gap: 8,
+    marginHorizontal: 4, width: 90,
+    borderWidth: 2, borderColor: 'transparent',
   },
   styleCardActive: { borderColor: COLORS.accent },
   styleSwatch: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 48, height: 48, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
   },
-  swatchCheck: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
+  swatchCheck: { fontSize: 20, fontWeight: '700' },
   styleLabel: { color: COLORS.textSecondary, fontSize: 11, fontFamily: 'DMSans_600SemiBold', textAlign: 'center' },
   styleLabelActive: { color: COLORS.primary },
-  budgetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
+
+  // Rooms
+  roomGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  roomChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 14,
+    backgroundColor: COLORS.surface, borderWidth: 1.5, borderColor: COLORS.border,
   },
-  budgetValue: {
-    color: COLORS.accent,
-    fontSize: 18,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  sliderTrack: {
-    height: 6,
-    backgroundColor: COLORS.border,
-    borderRadius: 3,
-    marginBottom: 10,
-    overflow: 'visible',
-    position: 'relative',
-  },
-  sliderFill: {
-    height: '100%',
-    backgroundColor: COLORS.accent,
-    borderRadius: 3,
-  },
-  sliderThumb: {
-    position: 'absolute',
-    top: -8,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: COLORS.accent,
-    borderWidth: 3,
-    borderColor: '#fff',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  budgetRange: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  budgetMin: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
-  budgetMax: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
+  roomChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  roomEmoji: { fontSize: 14 },
+  roomChipText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  roomChipTextActive: { color: '#fff', fontFamily: 'DMSans_600SemiBold' },
+
+  // Toggle
   toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 16,
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    flexDirection: 'row', alignItems: 'center', gap: 16,
+    backgroundColor: COLORS.surface, borderRadius: 16,
+    padding: 18, borderWidth: 1, borderColor: COLORS.border,
   },
   toggleRowActive: { borderColor: COLORS.accent, backgroundColor: '#FFFBF5' },
   toggleLabel: { color: COLORS.textPrimary, fontSize: 15, fontFamily: 'DMSans_600SemiBold', marginBottom: 2 },
   toggleSub: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
   toggleSwitch: {
-    width: 48,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.border,
-    justifyContent: 'center',
-    padding: 2,
+    width: 48, height: 28, borderRadius: 14,
+    backgroundColor: COLORS.border, justifyContent: 'center', padding: 2,
   },
   toggleSwitchActive: { backgroundColor: COLORS.accent },
   toggleKnob: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 2,
+    width: 24, height: 24, borderRadius: 12, backgroundColor: '#fff',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15, shadowRadius: 2, elevation: 2,
   },
   toggleKnobActive: { alignSelf: 'flex-end' },
-  roomGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  roomChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 12,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-  },
-  roomChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  roomChipText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_500Medium' },
-  roomChipTextActive: { color: '#fff', fontFamily: 'DMSans_600SemiBold' },
+
+  // Generate
   generateBtn: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    height: 62,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 10,
-    marginBottom: 16,
+    borderRadius: 20, overflow: 'hidden', height: 62,
+    shadowColor: COLORS.accent, shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35, shadowRadius: 16, elevation: 10, marginBottom: 16,
   },
+  generateBtnDisabled: { shadowOpacity: 0.1 },
   generateGradient: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
   },
   generateText: { color: '#fff', fontSize: 17, fontFamily: 'DMSans_600SemiBold', letterSpacing: 0.3 },
   disclaimer: {
-    color: COLORS.textTertiary,
-    fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
-    textAlign: 'center',
-    lineHeight: 18,
+    color: COLORS.textTertiary, fontSize: 12,
+    fontFamily: 'DMSans_400Regular', textAlign: 'center', lineHeight: 18,
   },
 });
