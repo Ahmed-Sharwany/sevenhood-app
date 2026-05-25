@@ -21,16 +21,17 @@ import {
   Wrench,
   Users,
   Sparkles,
+  CalendarDays,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { COLORS, IMG } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
 
 const QUICK_ACTIONS = [
-  { label: 'My Unit',     Icon: Home,     color: COLORS.garden,  route: '/property' as const },
-  { label: 'Maintenance', Icon: Wrench,   color: COLORS.primary, route: '/maintenance' as const },
-  { label: 'Community',   Icon: Users,    color: COLORS.sage,    route: '/(tabs)/community' as const },
-  { label: 'Services',    Icon: Sparkles, color: COLORS.accent,  route: '/(tabs)/services' as const },
+  { label: 'My Unit',     Icon: Home,          color: COLORS.garden,  route: '/property' as const },
+  { label: 'Maintenance', Icon: Wrench,         color: COLORS.primary, route: '/maintenance' as const },
+  { label: 'Bookings',    Icon: CalendarDays,   color: COLORS.accent,  route: '/bookings' as const },
+  { label: 'Community',   Icon: Users,          color: COLORS.sage,    route: '/(tabs)/community' as const },
 ];
 
 function getGreeting() {
