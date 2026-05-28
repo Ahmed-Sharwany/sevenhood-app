@@ -80,7 +80,7 @@ function StatusChip({ status }: { status: string }) {
 
 const chip = StyleSheet.create({
   wrap: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10 },
-  text: { fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
+  text: { fontSize: 13, fontFamily: 'Inter_600SemiBold' },
 });
 
 const STATUS_TRANSITIONS: Record<string, { next: string; label: string }> = {
@@ -322,17 +322,17 @@ const styles = StyleSheet.create({
   stateText: {
     color: COLORS.textTertiary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   errorText: {
     color: COLORS.error,
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   errorSub: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
   },
   retryBtn: {
@@ -345,13 +345,13 @@ const styles = StyleSheet.create({
   retryText: {
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   backLinkBtn: { marginTop: 4 },
   backLinkText: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   header: {
     flexDirection: 'row',
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: COLORS.primary,
     fontSize: 18,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     textAlign: 'center',
   },
   pad: { padding: 20 },
@@ -407,13 +407,13 @@ const styles = StyleSheet.create({
   },
   ticketEmoji: { fontSize: 24 },
   flex1: { flex: 1 },
-  ticketCategory: { color: COLORS.primary, fontSize: 16, fontFamily: 'DMSans_600SemiBold', marginBottom: 2 },
-  ticketTime: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
-  ticketDesc: { color: COLORS.textSecondary, fontSize: 14, fontFamily: 'DMSans_400Regular', lineHeight: 22 },
+  ticketCategory: { color: COLORS.primary, fontSize: 16, fontFamily: 'Inter_600SemiBold', marginBottom: 2 },
+  ticketTime: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'Inter_400Regular' },
+  ticketDesc: { color: COLORS.textSecondary, fontSize: 14, fontFamily: 'Inter_400Regular', lineHeight: 22 },
   ticketUnit: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginTop: 8,
   },
   infoGrid: {
@@ -428,8 +428,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   infoItem: { alignItems: 'center', flex: 1 },
-  infoLabel: { color: COLORS.textTertiary, fontSize: 11, fontFamily: 'DMSans_400Regular', marginBottom: 4 },
-  infoValue: { color: COLORS.textPrimary, fontSize: 13, fontFamily: 'DMSans_600SemiBold', textAlign: 'center' },
+  infoLabel: { color: COLORS.textTertiary, fontSize: 11, fontFamily: 'Inter_400Regular', marginBottom: 4 },
+  infoValue: { color: COLORS.textPrimary, fontSize: 13, fontFamily: 'Inter_600SemiBold', textAlign: 'center' },
   infoDivider: { width: 1, height: 36, backgroundColor: COLORS.border },
   photoAttach: {
     width: '100%',
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   statusUpdateText: {
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   actionsRow: {
     flexDirection: 'row',
@@ -474,12 +474,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  actionText: { color: COLORS.primary, fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
-  actionTextWhite: { color: '#fff', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  actionText: { color: COLORS.primary, fontSize: 14, fontFamily: 'Inter_600SemiBold' },
+  actionTextWhite: { color: '#fff', fontSize: 14, fontFamily: 'Inter_600SemiBold' },
   sectionTitle: {
     color: COLORS.primary,
     fontSize: 16,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     marginBottom: 16,
   },
   timelineItem: {
@@ -503,6 +503,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.border,
   },
   timelineContent: { flex: 1 },
-  timelineText: { color: COLORS.textPrimary, fontSize: 14, fontFamily: 'DMSans_500Medium', marginBottom: 2 },
-  timelineAuthor: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
+  timelineText: { color: COLORS.textPrimary, fontSize: 14, fontFamily: 'Inter_500Medium', marginBottom: 2 },
+  timelineAuthor: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'Inter_400Regular' },
 });

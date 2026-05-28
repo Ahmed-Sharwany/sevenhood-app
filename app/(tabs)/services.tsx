@@ -141,7 +141,7 @@ function StatusChip({ status }: { status: string }) {
 
 const chip = StyleSheet.create({
   wrap: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  text: { fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
+  text: { fontSize: 12, fontFamily: 'Inter_600SemiBold' },
 });
 
 export default function ServicesScreen() {
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: COLORS.primary,
     fontSize: 28,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     paddingTop: 12,
     paddingBottom: 16,
   },
@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   subTabActive: { borderBottomColor: COLORS.accent },
-  subTabText: { color: COLORS.textSecondary, fontSize: 14, fontFamily: 'DMSans_500Medium' },
-  subTabTextActive: { color: COLORS.primary, fontFamily: 'DMSans_600SemiBold' },
+  subTabText: { color: COLORS.textSecondary, fontSize: 14, fontFamily: 'Inter_500Medium' },
+  subTabTextActive: { color: COLORS.primary, fontFamily: 'Inter_600SemiBold' },
   pad: { padding: 20 },
   aiCard: {
     backgroundColor: COLORS.primary,
@@ -359,12 +359,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  aiTitle: { color: '#fff', fontSize: 16, fontFamily: 'DMSans_600SemiBold', marginBottom: 2 },
-  aiSub: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'DMSans_400Regular' },
+  aiTitle: { color: '#fff', fontSize: 16, fontFamily: 'Inter_600SemiBold', marginBottom: 2 },
+  aiSub: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'Inter_400Regular' },
   sectionTitle: {
     color: COLORS.primary,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 0.5,
     marginBottom: 14,
     opacity: 0.6,
@@ -398,9 +398,9 @@ const styles = StyleSheet.create({
   },
   ticketIcon: { fontSize: 22 },
   ticketHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  ticketCategory: { color: COLORS.primary, fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
-  ticketDesc: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_400Regular', lineHeight: 19, marginBottom: 4 },
-  ticketTime: { color: COLORS.textTertiary, fontSize: 11, fontFamily: 'DMSans_400Regular' },
+  ticketCategory: { color: COLORS.primary, fontSize: 14, fontFamily: 'Inter_600SemiBold' },
+  ticketDesc: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'Inter_400Regular', lineHeight: 19, marginBottom: 4 },
+  ticketTime: { color: COLORS.textTertiary, fontSize: 11, fontFamily: 'Inter_400Regular' },
   fab: {
     position: 'absolute',
     bottom: 24,
@@ -428,8 +428,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   catPillActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  catText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_500Medium' },
-  catTextActive: { color: '#fff', fontFamily: 'DMSans_600SemiBold' },
+  catText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  catTextActive: { color: '#fff', fontFamily: 'Inter_600SemiBold' },
   vendorList: { padding: 16, gap: 16 },
   vendorCard: {
     backgroundColor: COLORS.surface,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   vendorImage: { width: '100%', height: 140 },
   vendorBody: { padding: 16 },
   vendorHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  vendorName: { color: COLORS.textPrimary, fontSize: 16, fontFamily: 'DMSans_600SemiBold' },
+  vendorName: { color: COLORS.textPrimary, fontSize: 16, fontFamily: 'Inter_600SemiBold' },
   verifiedBadge: {
     backgroundColor: `${COLORS.success}15`,
     borderRadius: 8,
@@ -455,10 +455,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: `${COLORS.success}30`,
   },
-  verifiedText: { color: COLORS.success, fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
+  verifiedText: { color: COLORS.success, fontSize: 11, fontFamily: 'Inter_600SemiBold' },
   vendorRating: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 10 },
-  ratingText: { color: COLORS.textPrimary, fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
-  reviewsText: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
+  ratingText: { color: COLORS.textPrimary, fontSize: 13, fontFamily: 'Inter_600SemiBold' },
+  reviewsText: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'Inter_400Regular' },
   vendorTags: { flexDirection: 'row', gap: 6, marginBottom: 14, flexWrap: 'wrap' },
   vendorTag: {
     backgroundColor: COLORS.background,
@@ -468,10 +468,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  vendorTagText: { color: COLORS.textSecondary, fontSize: 11, fontFamily: 'DMSans_500Medium' },
+  vendorTagText: { color: COLORS.textSecondary, fontSize: 11, fontFamily: 'Inter_500Medium' },
   vendorFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  priceText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_400Regular' },
-  priceValue: { color: COLORS.textPrimary, fontFamily: 'DMSans_600SemiBold' },
+  priceText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'Inter_400Regular' },
+  priceValue: { color: COLORS.textPrimary, fontFamily: 'Inter_600SemiBold' },
   bookBtn: {
     backgroundColor: COLORS.primary,
     borderRadius: 14,
@@ -483,5 +483,5 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  bookBtnText: { color: '#fff', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
+  bookBtnText: { color: '#fff', fontSize: 13, fontFamily: 'Inter_600SemiBold' },
 });

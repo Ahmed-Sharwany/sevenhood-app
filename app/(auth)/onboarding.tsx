@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   skipText: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   content: {
     flex: 1,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#fff',
     fontSize: 36,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     lineHeight: 44,
     marginBottom: 20,
     textShadowColor: 'rgba(0,0,0,0.3)',
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   subtitle: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 16,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     lineHeight: 26,
     marginBottom: 40,
     maxWidth: 320,

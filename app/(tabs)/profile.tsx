@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#fff',
     fontSize: 28,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
   },
   verifiedBadge: {
     position: 'absolute',
@@ -230,13 +230,13 @@ const styles = StyleSheet.create({
   name: {
     color: COLORS.primary,
     fontSize: 22,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     marginBottom: 4,
   },
   unit: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 20,
   },
   statsRow: {
@@ -248,13 +248,13 @@ const styles = StyleSheet.create({
   statValue: {
     color: COLORS.primary,
     fontSize: 20,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 2,
   },
   statLabel: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   statDivider: {
     width: 1,
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: COLORS.primary,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 1,
     textTransform: 'uppercase',
     opacity: 0.4,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: COLORS.textPrimary,
     fontSize: 15,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   signOutWrap: {
     paddingHorizontal: 20,
@@ -329,12 +329,12 @@ const styles = StyleSheet.create({
   signOutText: {
     color: COLORS.error,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   version: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     marginTop: 20,
   },

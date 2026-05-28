@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   greetingLabel: {
     color: 'rgba(255,255,255,0.55)',
     fontSize: 11,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
     marginBottom: 3,
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   greetingName: {
     color: '#fff',
     fontSize: 24,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     letterSpacing: 0.3,
   },
   bellBtn: {
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     color: 'rgba(255,255,255,0.55)',
     fontSize: 10,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 4,
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     color: '#fff',
     fontSize: 18,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     marginBottom: 5,
   },
   locationRow: {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   locationText: {
     color: COLORS.accentLight,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   floorBadge: {
     backgroundColor: 'rgba(255,255,255,0.15)',
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
   floorText: {
     color: '#fff',
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
     lineHeight: 16,
   },
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     color: COLORS.primary,
     fontSize: 10,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     opacity: 0.45,
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   quickLabel: {
     color: COLORS.textPrimary,
     fontSize: 11,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
   },
 
@@ -460,13 +460,13 @@ const styles = StyleSheet.create({
   reminderTitle: {
     color: COLORS.primary,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 3,
   },
   reminderSub: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     lineHeight: 17,
   },
   dueBadge: {
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   dueBadgeText: {
     color: COLORS.accent,
     fontSize: 11,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 
   // ── Activity ──────────────────────────────────────────────────────────────────
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   viewAll: {
     color: COLORS.accent,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   activityCard: {
     backgroundColor: COLORS.surface,
@@ -518,17 +518,17 @@ const styles = StyleSheet.create({
   activityTitle: {
     color: COLORS.textPrimary,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 2,
   },
   activitySub: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   activityTime: {
     color: COLORS.textTertiary,
     fontSize: 11,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
 });

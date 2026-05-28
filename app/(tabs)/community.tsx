@@ -524,7 +524,7 @@ const shared = StyleSheet.create({
   emptyText: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: COLORS.primary,
     fontSize: 28,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     paddingTop: 12,
     paddingBottom: 16,
   },
@@ -568,11 +568,11 @@ const styles = StyleSheet.create({
   subTabText: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   subTabTextActive: {
     color: COLORS.primary,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   filterScroll: {
     flexGrow: 0,
@@ -598,11 +598,11 @@ const styles = StyleSheet.create({
   filterText: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   filterTextActive: {
     color: '#fff',
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   feedScroll: {
     flex: 1,
@@ -641,18 +641,18 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   postAuthor: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 2,
   },
   postTime: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   operatorBadge: {
     backgroundColor: `${COLORS.accent}20`,
@@ -665,12 +665,12 @@ const styles = StyleSheet.create({
   operatorBadgeText: {
     color: COLORS.accent,
     fontSize: 11,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   postContent: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     lineHeight: 22,
     marginBottom: 16,
   },
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
   reactionCount: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   fab: {
     position: 'absolute',
@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
   eventName: {
     color: COLORS.textPrimary,
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 6,
   },
   eventMeta: {
@@ -751,7 +751,7 @@ const styles = StyleSheet.create({
   eventMetaText: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   eventFooter: {
     flexDirection: 'row',
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
   rsvpText: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   rsvpBtn: {
     paddingHorizontal: 16,
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
   rsvpBtnText: {
     color: '#fff',
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   rsvpBtnTextActive: {
     color: '#fff',
@@ -804,19 +804,19 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     color: COLORS.textPrimary,
   },
   dirSectionTitle: {
     color: COLORS.primary,
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 8,
   },
   privacyNote: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 16,
   },
   memberCard: {
@@ -840,18 +840,18 @@ const styles = StyleSheet.create({
   memberAvatarText: {
     color: '#fff',
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   memberName: {
     color: COLORS.textPrimary,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 2,
   },
   memberUnit: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 8,
   },
   interestRow: {
@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
   interestText: {
     color: COLORS.textSecondary,
     fontSize: 11,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
 });
 
@@ -907,7 +907,7 @@ const newPostModal = StyleSheet.create({
   sheetTitle: {
     color: COLORS.primary,
     fontSize: 18,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
   },
   closeBtn: {
     width: 36,
@@ -927,7 +927,7 @@ const newPostModal = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     color: COLORS.textPrimary,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -946,6 +946,6 @@ const newPostModal = StyleSheet.create({
   submitBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

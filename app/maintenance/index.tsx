@@ -81,7 +81,7 @@ function StatusChip({ status }: { status: string }) {
 
 const chip = StyleSheet.create({
   wrap: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  text: { fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
+  text: { fontSize: 12, fontFamily: 'Inter_600SemiBold' },
 });
 
 export default function MaintenanceListScreen() {
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: COLORS.primary,
     fontSize: 20,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     textAlign: 'center',
   },
   addBtn: {
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
     color: COLORS.textSecondary,
   },
   tabTextActive: {
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     color: COLORS.primary,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     opacity: 0.5,
     letterSpacing: 0.5,
     marginBottom: 14,
@@ -327,9 +327,9 @@ const styles = StyleSheet.create({
   },
   ticketIcon: { fontSize: 22 },
   ticketHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  ticketCategory: { color: COLORS.primary, fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
-  ticketDesc: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_400Regular', lineHeight: 19, marginBottom: 4 },
-  ticketTime: { color: COLORS.textTertiary, fontSize: 11, fontFamily: 'DMSans_400Regular' },
+  ticketCategory: { color: COLORS.primary, fontSize: 14, fontFamily: 'Inter_600SemiBold' },
+  ticketDesc: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'Inter_400Regular', lineHeight: 19, marginBottom: 4 },
+  ticketTime: { color: COLORS.textTertiary, fontSize: 11, fontFamily: 'Inter_400Regular' },
   flex1: { flex: 1 },
   centerState: {
     alignItems: 'center',
@@ -340,22 +340,22 @@ const styles = StyleSheet.create({
   stateText: {
     color: COLORS.textTertiary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   emptyText: {
     color: COLORS.primary,
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   errorText: {
     color: COLORS.error,
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   errorSub: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     paddingHorizontal: 24,
   },
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   retryText: {
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   fab: {
     position: 'absolute',

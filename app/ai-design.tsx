@@ -446,28 +446,28 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1, color: COLORS.primary, fontSize: 18,
-    fontFamily: 'CormorantGaramond_700Bold', textAlign: 'center',
+    fontFamily: 'PlayfairDisplay_600SemiBold', textAlign: 'center',
   },
   heroBanner: { padding: 28, alignItems: 'center', gap: 12 },
   heroTitle: {
     color: '#fff', fontSize: 24,
-    fontFamily: 'CormorantGaramond_700Bold', textAlign: 'center',
+    fontFamily: 'PlayfairDisplay_600SemiBold', textAlign: 'center',
   },
   heroSub: {
     color: 'rgba(255,255,255,0.75)', fontSize: 14,
-    fontFamily: 'DMSans_400Regular', textAlign: 'center',
+    fontFamily: 'Inter_400Regular', textAlign: 'center',
     lineHeight: 22, maxWidth: 300,
   },
   pad: { padding: 20 },
   fieldGroup: { marginBottom: 28 },
   fieldLabel: {
     color: COLORS.primary, fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold', letterSpacing: 0.8,
+    fontFamily: 'Inter_600SemiBold', letterSpacing: 0.8,
     textTransform: 'uppercase', marginBottom: 6,
   },
   fieldSub: {
     color: COLORS.textTertiary, fontSize: 13,
-    fontFamily: 'DMSans_400Regular', marginBottom: 14,
+    fontFamily: 'Inter_400Regular', marginBottom: 14,
   },
 
   // Result
@@ -480,13 +480,13 @@ const styles = StyleSheet.create({
   },
   resultLabel: {
     color: COLORS.accent, fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold', marginBottom: 14,
+    fontFamily: 'Inter_600SemiBold', marginBottom: 14,
   },
   beforeAfterRow: { flexDirection: 'row', gap: 10 },
   beforeAfterItem: { flex: 1 },
   beforeAfterCaption: {
     color: COLORS.textTertiary, fontSize: 10,
-    fontFamily: 'DMSans_600SemiBold', letterSpacing: 1,
+    fontFamily: 'Inter_600SemiBold', letterSpacing: 1,
     marginBottom: 6, textAlign: 'center',
   },
   beforeAfterImage: {
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     gap: 8, paddingVertical: 12, borderRadius: 14,
     backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border,
   },
-  resultBtnText: { color: COLORS.primary, fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  resultBtnText: { color: COLORS.primary, fontSize: 14, fontFamily: 'Inter_600SemiBold' },
 
   // Photo
   cameraSlot: {
@@ -509,16 +509,16 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary + '30', borderStyle: 'dashed',
   },
   cameraSlotTitle: {
-    color: COLORS.primary, fontSize: 16, fontFamily: 'DMSans_600SemiBold',
+    color: COLORS.primary, fontSize: 16, fontFamily: 'Inter_600SemiBold',
   },
   cameraSlotSub: {
-    color: COLORS.textTertiary, fontSize: 13, fontFamily: 'DMSans_400Regular',
+    color: COLORS.textTertiary, fontSize: 13, fontFamily: 'Inter_400Regular',
   },
   libraryLink: {
     alignItems: 'center', paddingVertical: 12,
   },
   libraryLinkText: {
-    color: COLORS.accent, fontSize: 13, fontFamily: 'DMSans_500Medium',
+    color: COLORS.accent, fontSize: 13, fontFamily: 'Inter_500Medium',
     textDecorationLine: 'underline',
   },
   photoPreviewWrap: { position: 'relative' },
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 6,
   },
-  retakeBtnText: { color: '#fff', fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
+  retakeBtnText: { color: '#fff', fontSize: 12, fontFamily: 'Inter_600SemiBold' },
   photoPreview: {
     width: '100%', aspectRatio: 4 / 3,
     borderRadius: 18, backgroundColor: COLORS.border,
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   swatchCheck: { fontSize: 20, fontWeight: '700' },
-  styleLabel: { color: COLORS.textSecondary, fontSize: 11, fontFamily: 'DMSans_600SemiBold', textAlign: 'center' },
+  styleLabel: { color: COLORS.textSecondary, fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' },
   styleLabelActive: { color: COLORS.primary },
 
   // Rooms
@@ -568,8 +568,8 @@ const styles = StyleSheet.create({
   },
   roomChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   roomEmoji: { fontSize: 14 },
-  roomChipText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_500Medium' },
-  roomChipTextActive: { color: '#fff', fontFamily: 'DMSans_600SemiBold' },
+  roomChipText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  roomChipTextActive: { color: '#fff', fontFamily: 'Inter_600SemiBold' },
 
   // Toggle
   toggleRow: {
@@ -578,8 +578,8 @@ const styles = StyleSheet.create({
     padding: 18, borderWidth: 1, borderColor: COLORS.border,
   },
   toggleRowActive: { borderColor: COLORS.accent, backgroundColor: '#FFFBF5' },
-  toggleLabel: { color: COLORS.textPrimary, fontSize: 15, fontFamily: 'DMSans_600SemiBold', marginBottom: 2 },
-  toggleSub: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_400Regular' },
+  toggleLabel: { color: COLORS.textPrimary, fontSize: 15, fontFamily: 'Inter_600SemiBold', marginBottom: 2 },
+  toggleSub: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'Inter_400Regular' },
   toggleSwitch: {
     width: 48, height: 28, borderRadius: 14,
     backgroundColor: COLORS.border, justifyContent: 'center', padding: 2,
@@ -602,9 +602,9 @@ const styles = StyleSheet.create({
   generateGradient: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
   },
-  generateText: { color: '#fff', fontSize: 17, fontFamily: 'DMSans_600SemiBold', letterSpacing: 0.3 },
+  generateText: { color: '#fff', fontSize: 17, fontFamily: 'Inter_600SemiBold', letterSpacing: 0.3 },
   disclaimer: {
     color: COLORS.textTertiary, fontSize: 12,
-    fontFamily: 'DMSans_400Regular', textAlign: 'center', lineHeight: 18,
+    fontFamily: 'Inter_400Regular', textAlign: 'center', lineHeight: 18,
   },
 });

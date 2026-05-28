@@ -58,7 +58,7 @@ function SplashIcon({ size = 88 }: { size?: number }) {
         x={r}
         y={r * 1.24}
         textAnchor="middle"
-        fontFamily="CormorantGaramond_700Bold"
+        fontFamily="PlayfairDisplay_600SemiBold"
         fontSize={size * 0.44}
         fontWeight="700"
         fill="#FFFFFF"
@@ -195,14 +195,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     fontSize: 44,
     color: '#FFFFFF',
     letterSpacing: 2,
     marginBottom: 6,
   },
   arabic: {
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     fontSize: 13,
     color: 'rgba(255,255,255,0.55)',
     letterSpacing: 4,

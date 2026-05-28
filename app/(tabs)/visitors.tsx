@@ -86,7 +86,7 @@ function StatusBadge({ status }: { status: string }) {
 
 const badge = StyleSheet.create({
   wrap: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  text: { fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
+  text: { fontSize: 12, fontFamily: 'Inter_600SemiBold' },
 });
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
@@ -666,14 +666,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: COLORS.primary,
     fontSize: 28,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     paddingTop: 12,
     marginBottom: 4,
   },
   headerSub: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   newPassWrap: { padding: 20, paddingBottom: 8 },
   newPassBtn: {
@@ -693,13 +693,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  newPassIcon: { color: '#fff', fontSize: 22, fontFamily: 'DMSans_600SemiBold' },
-  newPassText: { color: '#fff', fontSize: 17, fontFamily: 'DMSans_600SemiBold', letterSpacing: 0.3 },
+  newPassIcon: { color: '#fff', fontSize: 22, fontFamily: 'Inter_600SemiBold' },
+  newPassText: { color: '#fff', fontSize: 17, fontFamily: 'Inter_600SemiBold', letterSpacing: 0.3 },
   section: { paddingHorizontal: 20, paddingTop: 12 },
   sectionTitle: {
     color: COLORS.primary,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 0.5,
     opacity: 0.5,
     marginBottom: 12,
@@ -711,14 +711,14 @@ const styles = StyleSheet.create({
   errorText: {
     color: COLORS.error,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     paddingVertical: 20,
   },
   emptyText: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     paddingVertical: 20,
   },
@@ -751,8 +751,8 @@ const styles = StyleSheet.create({
   },
   passEmoji: { fontSize: 22 },
   passInfo: { flex: 1 },
-  passName: { color: COLORS.textPrimary, fontSize: 15, fontFamily: 'DMSans_600SemiBold', marginBottom: 2 },
-  passDetail: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_400Regular' },
+  passName: { color: COLORS.textPrimary, fontSize: 15, fontFamily: 'Inter_600SemiBold', marginBottom: 2 },
+  passDetail: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'Inter_400Regular' },
 });
 
 const modal = StyleSheet.create({
@@ -787,7 +787,7 @@ const modal = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  sheetTitle: { color: COLORS.primary, fontSize: 18, fontFamily: 'CormorantGaramond_700Bold' },
+  sheetTitle: { color: COLORS.primary, fontSize: 18, fontFamily: 'PlayfairDisplay_600SemiBold' },
   closeBtn: {
     width: 36,
     height: 36,
@@ -800,7 +800,7 @@ const modal = StyleSheet.create({
   stepLabel: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 16,
   },
   typeGrid: {
@@ -827,19 +827,19 @@ const modal = StyleSheet.create({
   typeLabel: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
   },
   typeLabelActive: { color: COLORS.primary },
   nextBtn: { borderRadius: 18, overflow: 'hidden', height: 56, marginBottom: 8 },
   nextBtnDisabled: { opacity: 0.4 },
   nextGradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  nextBtnText: { color: '#fff', fontSize: 16, fontFamily: 'DMSans_600SemiBold' },
+  nextBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Inter_600SemiBold' },
   fieldRow: { marginBottom: 18 },
   fieldLabel: {
     color: COLORS.primary,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -850,7 +850,7 @@ const modal = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     color: COLORS.textPrimary,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -864,7 +864,7 @@ const modal = StyleSheet.create({
     borderColor: COLORS.border,
   },
   inputDisabled: { opacity: 0.6 },
-  inputText: { fontSize: 15, fontFamily: 'DMSans_400Regular', color: COLORS.textPrimary },
+  inputText: { fontSize: 15, fontFamily: 'Inter_400Regular', color: COLORS.textPrimary },
   daysRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   dayChip: {
     paddingHorizontal: 12,
@@ -875,21 +875,21 @@ const modal = StyleSheet.create({
     borderColor: COLORS.border,
   },
   dayChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  dayText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
+  dayText: { color: COLORS.textSecondary, fontSize: 13, fontFamily: 'Inter_600SemiBold' },
   dayTextActive: { color: '#fff' },
   successIcon: { alignItems: 'center', marginBottom: 8 },
   successEmoji: { fontSize: 56 },
   successTitle: {
     color: COLORS.primary,
     fontSize: 24,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     textAlign: 'center',
     marginBottom: 6,
   },
   successSub: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -906,7 +906,7 @@ const modal = StyleSheet.create({
     borderStyle: 'dashed',
   },
   qrIcon: { fontSize: 56 },
-  qrLabel: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'DMSans_500Medium', marginTop: 4 },
+  qrLabel: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'Inter_500Medium', marginTop: 4 },
   codeRow: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 8 },
   codeBox: {
     width: 44,
@@ -918,11 +918,11 @@ const modal = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  codeText: { color: COLORS.primary, fontSize: 22, fontFamily: 'DMSans_600SemiBold' },
+  codeText: { color: COLORS.primary, fontSize: 22, fontFamily: 'Inter_600SemiBold' },
   codeHint: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -935,8 +935,8 @@ const modal = StyleSheet.create({
     alignItems: 'center',
   },
   shareBtnSms: { backgroundColor: COLORS.primary },
-  shareBtnText: { color: '#fff', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
-  shareBtnTextSms: { color: '#fff', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  shareBtnText: { color: '#fff', fontSize: 14, fontFamily: 'Inter_600SemiBold' },
+  shareBtnTextSms: { color: '#fff', fontSize: 14, fontFamily: 'Inter_600SemiBold' },
   doneBtn: {
     backgroundColor: COLORS.background,
     borderRadius: 14,
@@ -945,5 +945,5 @@ const modal = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  doneBtnText: { color: COLORS.textSecondary, fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
+  doneBtnText: { color: COLORS.textSecondary, fontSize: 15, fontFamily: 'Inter_600SemiBold' },
 });

@@ -18,7 +18,7 @@ function TabBarIcon({
       <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
         <Icon
           size={20}
-          color={focused ? '#fff' : COLORS.textTertiary}
+          color={focused ? '#FBF8F2' : COLORS.textTertiary}
           strokeWidth={focused ? 2.5 : 2}
         />
       </View>
@@ -111,13 +111,13 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 10,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
     color: COLORS.textTertiary,
     letterSpacing: 0,
     textAlign: 'center',
   },
   tabLabelActive: {
     color: COLORS.primary,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

@@ -88,7 +88,7 @@ const chipStyles = StyleSheet.create({
   },
   text: {
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 });
 
@@ -463,18 +463,18 @@ const styles = StyleSheet.create({
   liveText: {
     color: COLORS.success,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   unitTitle: {
     color: '#fff',
     fontSize: 22,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     marginBottom: 4,
   },
   unitAddr: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 8,
   },
   unitMeta: {
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   metaItem: {
     color: COLORS.accentLight,
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   metaDot: {
     color: 'rgba(255,255,255,0.4)',
@@ -517,11 +517,11 @@ const styles = StyleSheet.create({
   tabText: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   tabTextActive: {
     color: COLORS.primary,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   content: {
     flex: 1,
@@ -539,7 +539,7 @@ const tabStyles = StyleSheet.create({
   sectionTitle: {
     color: COLORS.primary,
     fontSize: 16,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     marginBottom: 16,
   },
   detailRow: {
@@ -554,12 +554,12 @@ const tabStyles = StyleSheet.create({
   detailLabel: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   detailValue: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   amenitiesGrid: {
     flexDirection: 'row',
@@ -577,7 +577,7 @@ const tabStyles = StyleSheet.create({
   amenityText: {
     color: COLORS.textPrimary,
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   watermarkNotice: {
     backgroundColor: '#FFF7ED',
@@ -590,7 +590,7 @@ const tabStyles = StyleSheet.create({
   watermarkText: {
     color: '#92400E',
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   contractRow: {
     flexDirection: 'row',
@@ -614,13 +614,13 @@ const tabStyles = StyleSheet.create({
   contractName: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 2,
   },
   contractMeta: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   versionBadge: {
     backgroundColor: COLORS.background,
@@ -631,7 +631,7 @@ const tabStyles = StyleSheet.create({
   versionText: {
     color: COLORS.textSecondary,
     fontSize: 11,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   downloadBtn: {
     width: 36,
@@ -654,13 +654,13 @@ const tabStyles = StyleSheet.create({
   summaryLabel: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 4,
   },
   summaryValue: {
     color: COLORS.primary,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   paymentRow: {
     flexDirection: 'row',
@@ -684,13 +684,13 @@ const tabStyles = StyleSheet.create({
   paymentName: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 2,
   },
   paymentDue: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   paymentRight: {
     alignItems: 'flex-end',
@@ -699,7 +699,7 @@ const tabStyles = StyleSheet.create({
   paymentAmount: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   warrantyCard: {
     backgroundColor: COLORS.surface,
@@ -720,13 +720,13 @@ const tabStyles = StyleSheet.create({
   warrantyName: {
     color: COLORS.textPrimary,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 2,
   },
   warrantyProvider: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   warrantyBadge: {
     borderRadius: 10,
@@ -735,12 +735,12 @@ const tabStyles = StyleSheet.create({
   },
   warrantyBadgeText: {
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   warrantyExpiry: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginTop: 8,
   },
   addSnagBtn: {
@@ -756,7 +756,7 @@ const tabStyles = StyleSheet.create({
   addSnagText: {
     color: '#fff',
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   snagCard: {
     backgroundColor: COLORS.surface,
@@ -777,18 +777,18 @@ const tabStyles = StyleSheet.create({
   snagDesc: {
     color: COLORS.textPrimary,
     fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
     marginBottom: 4,
   },
   snagDate: {
     color: COLORS.textTertiary,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   drawingHint: {
     color: COLORS.textTertiary,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -824,11 +824,11 @@ const tabStyles = StyleSheet.create({
   drawingName: {
     color: '#fff',
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   drawingType: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 11,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
 });

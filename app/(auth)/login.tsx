@@ -410,13 +410,13 @@ const styles = StyleSheet.create({
   wordmarkSeven: {
     color: COLORS.primary,
     fontSize: 22,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     letterSpacing: 1,
   },
   wordmarkHood: {
     color: COLORS.accent,
     fontSize: 22,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     letterSpacing: 1,
   },
   backBtn: {
@@ -429,25 +429,25 @@ const styles = StyleSheet.create({
   backText: {
     color: COLORS.primary,
     fontSize: 15,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   heading: {
     color: COLORS.primary,
     fontSize: 32,
-    fontFamily: 'CormorantGaramond_700Bold',
+    fontFamily: 'PlayfairDisplay_600SemiBold',
     lineHeight: 40,
     marginBottom: 8,
   },
   subheading: {
     color: COLORS.textSecondary,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginBottom: 40,
     lineHeight: 22,
   },
   subheadingEmail: {
     color: COLORS.primary,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   fieldGroup: {
     marginBottom: 24,
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     color: COLORS.primary,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
     marginBottom: 12,
@@ -484,12 +484,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: COLORS.textPrimary,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   errorText: {
     color: '#E53E3E',
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     marginTop: 8,
   },
   // OTP digit boxes
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     height: '100%',
     fontSize: 22,
     color: COLORS.primary,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
   },
   signInBtn: {
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   signInText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 0.5,
   },
   dividerRow: {
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
   dividerText: {
     color: COLORS.textTertiary,
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: 'Inter_500Medium',
   },
   biometricBtn: {
     height: 58,
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
   biometricText: {
     color: COLORS.primary,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
   createRow: {
     flexDirection: 'row',
@@ -595,11 +595,11 @@ const styles = StyleSheet.create({
   createText: {
     color: COLORS.textSecondary,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: 'Inter_400Regular',
   },
   createLink: {
     color: COLORS.accent,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

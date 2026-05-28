@@ -1,31 +1,36 @@
-// Sevenhood / سابع جار — Brand Tokens
+// Sevenhood / سابع جار — Brand Tokens v2
 export const COLORS = {
-  // Greens (primary)
-  primary:      '#0D2818', // forest — main dark green
-  primaryLight: '#163D26', // deep
-  garden:       '#1E5435',
-  sage:         '#2A7A4C',
-  leaf:         '#3DAF6B',
-  mist:         '#C8E8D4', // light green tint
+  // Primary dark (warm obsidian — replaces forest green)
+  primary:      '#0B0C0A',
+  primaryLight: '#131410',
 
-  // Accent (gold/amber)
-  accent:       '#C87C2A', // gold
-  accentLight:  '#E09040', // amber
+  // Maqam Gold accent (replaces orange gold)
+  accent:       '#C9A56B',
+  accentDeep:   '#A88349',
+  accentSubtle: '#F5ECD9',
 
-  // Surfaces
-  background:   '#FAF7F2', // cream
+  // Sage — kept for success / green status only
+  sage:         '#566656',
+  sageLight:    '#7A9E7A',
+  sageMist:     '#E8EDE0',
+
+  // Warm ivory surfaces
+  background:   '#FBF8F2', // bone-50
   surface:      '#FFFFFF',
-  sand:         '#F5EDDF',
+  sand:         '#F4F0E8', // bone-100
 
   // Text
-  textPrimary:  '#0D1A12', // ink
-  textSecondary:'#4A6355', // slate
-  textTertiary: '#8FAF9A', // fog
+  textPrimary:  '#0B0C0A',
+  textSecondary:'#6B6D68',
+  textTertiary: '#9B9D98',
 
-  // Utility
-  border:       '#D8E8DC',
-  success:      '#1F6F4A',
-  warning:      '#C87C2A',
+  // Borders / hairlines
+  border:       'rgba(11,12,10,.1)',
+  hairline:     'rgba(11,12,10,.08)',
+
+  // Semantic
+  success:      '#566656',
+  warning:      '#C9A56B',
   error:        '#DC2626',
 } as const;
 
