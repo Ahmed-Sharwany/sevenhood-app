@@ -103,7 +103,7 @@ export default function VisitorsScreen() {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   // Unit resolution — derived from AuthContext
-  const unitId    = (resident?.unit_id as string | null) ?? null;
+  const unitId    = (resident?.units as any)?.id ?? null;
   const unitLabel = resident?.units
     ? `Unit ${(resident.units as any).unit_number} — ${(resident.units as any).buildings?.name ?? 'Sevenhood'}`
     : 'Sevenhood';

@@ -182,11 +182,14 @@ export default function RootLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)"           options={{ animation: 'fade' }} />
             <Stack.Screen name="(tabs)"       options={{ animation: 'fade' }} />
-            <Stack.Screen name="property"     options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="ai-design"    options={{ animation: 'slide_from_bottom' }} />
-            <Stack.Screen name="maintenance/index" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="maintenance/new"   options={{ animation: 'slide_from_bottom' }} />
-            <Stack.Screen name="maintenance/[id]"  options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="property"              options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="bookings"             options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="profile-edit"         options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="notification-settings" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="ai-design"            options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="maintenance/index"    options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="maintenance/new"      options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="maintenance/[id]"     options={{ animation: 'slide_from_right' }} />
           </Stack>
         </AuthProvider>
       </SafeAreaProvider>
