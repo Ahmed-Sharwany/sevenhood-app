@@ -26,9 +26,10 @@ import {
 import * as Haptics from 'expo-haptics';
 import { COLORS, IMG } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 const QUICK_ACTIONS = [
-  { label: 'My Unit',     Icon: Home,          color: COLORS.garden,  route: '/property' as const },
+  { label: 'My Unit',     Icon: Home,          color: COLORS.sage,    route: '/property' as const },
   { label: 'Maintenance', Icon: Wrench,         color: COLORS.primary, route: '/maintenance' as const },
   { label: 'Bookings',    Icon: CalendarDays,   color: COLORS.accent,  route: '/bookings' as const },
   { label: 'Community',   Icon: Users,          color: COLORS.sage,    route: '/(tabs)/community' as const },
@@ -42,27 +43,41 @@ function getGreeting() {
 }
 
 export default function HomeScreen() {
-  const [resident, setResident] = useState<any>(null);
+  // Use the authenticated resident from context — never queries the first row in the DB
+  const { resident } = useAuth();
   const [tickets, setTickets] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   const [pendingVisitors, setPendingVisitors] = useState(0);
 
   useEffect(() => {
+    if (!resident) return;
     async function loadData() {
-      const [{ data: residents }, { data: ticketData }, { data: postData }, { count }] =
+      const unitId = (resident as any).units?.id ?? '';
+      const [{ data: ticketData }, { data: postData }, { count }] =
         await Promise.all([
-          supabase.from('residents').select('*, units(unit_number, floor, tower, buildings(name))').limit(1).single(),
-          supabase.from('maintenance_tickets').select('*').order('created_at', { ascending: false }).limit(3),
-          supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(2),
-          supabase.from('visitor_passes').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+          supabase
+            .from('maintenance_tickets')
+            .select('*')
+            .eq('resident_id', resident.id)
+            .order('created_at', { ascending: false })
+            .limit(3),
+          supabase
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(2),
+          supabase
+            .from('visitor_passes')
+            .select('*', { count: 'exact', head: true })
+            .eq('resident_id', resident.id)
+            .eq('status', 'pending'),
         ]);
-      if (residents) setResident(residents);
       if (ticketData) setTickets(ticketData);
       if (postData) setPosts(postData);
       setPendingVisitors(count ?? 0);
     }
     loadData();
-  }, []);
+  }, [resident]);
 
   const residentName = resident?.full_name ?? 'Welcome';
   const unit = resident?.units;
@@ -74,7 +89,7 @@ export default function HomeScreen() {
     ...tickets.map(t => ({
       Icon: CheckCircle,
       color: t.status === 'completed' ? COLORS.success : COLORS.primary,
-      bg: t.status === 'completed' ? '#F0FDF4' : COLORS.mist + '55',
+      bg: t.status === 'completed' ? COLORS.sageMist : COLORS.sand,
       text: t.status === 'completed' ? 'Maintenance completed' : 'Maintenance in progress',
       time: new Date(t.created_at).toLocaleDateString(),
       sub: t.description?.slice(0, 40) ?? t.category,
@@ -82,7 +97,7 @@ export default function HomeScreen() {
     ...posts.map(p => ({
       Icon: MessageCircle,
       color: COLORS.primary,
-      bg: COLORS.mist + '55',
+      bg: COLORS.sand,
       text: 'New community post',
       time: new Date(p.created_at).toLocaleDateString(),
       sub: p.content?.slice(0, 40) ?? '',
@@ -107,7 +122,7 @@ export default function HomeScreen() {
 
       {/* ── Sticky header ── */}
       <LinearGradient
-        colors={[COLORS.primary, COLORS.garden]}
+        colors={[COLORS.primary, COLORS.primaryLight]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0.6, y: 1 }}
         style={styles.header}
@@ -138,7 +153,7 @@ export default function HomeScreen() {
       >
         {/* Hero card — sits inside a green bleed so it looks attached to the header */}
         <LinearGradient
-          colors={[COLORS.garden, COLORS.background]}
+          colors={[COLORS.primaryLight, COLORS.background]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={styles.heroBg}
@@ -206,7 +221,7 @@ export default function HomeScreen() {
               </View>
               <View style={styles.reminderInfo}>
                 <Text style={styles.reminderTitle}>Service Charge Reminder</Text>
-                <Text style={styles.reminderSub}>AED 3,200 due in 5 days — please pay via your building portal</Text>
+                <Text style={styles.reminderSub}>Service charge due in 5 days — please pay via your building portal</Text>
               </View>
             </View>
             <View style={styles.dueBadge}>

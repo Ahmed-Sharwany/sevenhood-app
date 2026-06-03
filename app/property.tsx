@@ -34,12 +34,12 @@ const CONTRACTS = [
 ];
 
 const PAYMENTS = [
-  { id: '1', installment: '1st Installment', due: '01 Jan 2023', amount: 'AED 185,000', status: 'paid' },
-  { id: '2', installment: '2nd Installment', due: '01 Apr 2023', amount: 'AED 185,000', status: 'paid' },
-  { id: '3', installment: '3rd Installment', due: '01 Jul 2023', amount: 'AED 185,000', status: 'paid' },
-  { id: '4', installment: '4th Installment', due: '01 Oct 2023', amount: 'AED 185,000', status: 'upcoming' },
-  { id: '5', installment: '5th Installment', due: '01 Jan 2024', amount: 'AED 185,000', status: 'upcoming' },
-  { id: '6', installment: 'Final Payment', due: '01 Jun 2024', amount: 'AED 225,000', status: 'upcoming' },
+  { id: '1', installment: '1st Installment', due: '01 Jan 2023', amount: 'SAR 185,000', status: 'paid' },
+  { id: '2', installment: '2nd Installment', due: '01 Apr 2023', amount: 'SAR 185,000', status: 'paid' },
+  { id: '3', installment: '3rd Installment', due: '01 Jul 2023', amount: 'SAR 185,000', status: 'paid' },
+  { id: '4', installment: '4th Installment', due: '01 Oct 2023', amount: 'SAR 185,000', status: 'upcoming' },
+  { id: '5', installment: '5th Installment', due: '01 Jan 2024', amount: 'SAR 185,000', status: 'upcoming' },
+  { id: '6', installment: 'Final Payment', due: '01 Jun 2024', amount: 'SAR 225,000', status: 'upcoming' },
 ];
 
 const WARRANTIES = [
@@ -295,15 +295,15 @@ function PaymentsTab() {
       <View style={tabStyles.paymentSummary}>
         <View>
           <Text style={tabStyles.summaryLabel}>Total Value</Text>
-          <Text style={tabStyles.summaryValue}>AED {total.toLocaleString()}</Text>
+          <Text style={tabStyles.summaryValue}>SAR {total.toLocaleString()}</Text>
         </View>
         <View>
           <Text style={tabStyles.summaryLabel}>Paid</Text>
-          <Text style={[tabStyles.summaryValue, { color: COLORS.success }]}>AED {paid.toLocaleString()}</Text>
+          <Text style={[tabStyles.summaryValue, { color: COLORS.success }]}>SAR {paid.toLocaleString()}</Text>
         </View>
         <View>
           <Text style={tabStyles.summaryLabel}>Remaining</Text>
-          <Text style={[tabStyles.summaryValue, { color: COLORS.warning }]}>AED {(total - paid).toLocaleString()}</Text>
+          <Text style={[tabStyles.summaryValue, { color: COLORS.warning }]}>SAR {(total - paid).toLocaleString()}</Text>
         </View>
       </View>
 

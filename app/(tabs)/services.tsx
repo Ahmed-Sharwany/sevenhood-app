@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,50 +20,39 @@ import {
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { COLORS, IMG } from '@/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const SUB_TABS = ['Maintenance', 'Marketplace'];
 
-const OPEN_TICKETS = [
-  {
-    id: '1',
-    category: 'AC & Cooling',
-    icon: '❄️',
-    description: 'AC unit making loud noise and not cooling properly',
-    time: '2h ago',
-    status: 'open',
-    priority: 'high',
-  },
-  {
-    id: '2',
-    category: 'Plumbing',
-    icon: '🔧',
-    description: 'Kitchen tap leaking under the sink cabinet',
-    time: '1d ago',
-    status: 'in_progress',
-    priority: 'medium',
-  },
-];
+// Maps ticket category to an emoji icon
+const CATEGORY_ICON: Record<string, string> = {
+  'AC & Cooling': '❄️',
+  'Plumbing': '🔧',
+  'Electrical': '⚡',
+  'Appliances': '🍳',
+  'Carpentry': '🪚',
+  'Painting': '🎨',
+  'Cleaning': '🧹',
+  'Security': '🔐',
+  'Elevator': '🛗',
+  'Internet': '📡',
+};
 
-const COMPLETED_TICKETS = [
-  {
-    id: '3',
-    category: 'Electrical',
-    icon: '⚡',
-    description: 'Bedroom light switch not functioning',
-    time: '3d ago',
-    status: 'completed',
-    priority: 'low',
-  },
-  {
-    id: '4',
-    category: 'Appliances',
-    icon: '🍳',
-    description: 'Built-in oven temperature inaccurate',
-    time: '1w ago',
-    status: 'completed',
-    priority: 'medium',
-  },
-];
+function ticketIcon(category: string): string {
+  return CATEGORY_ICON[category] ?? '🔨';
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
 
 const MARKETPLACE_CATEGORIES = ['All', 'Cleaning', 'Moving', 'Furnishing', 'Repair', 'Beauty', 'Childcare'];
 
@@ -145,8 +134,39 @@ const chip = StyleSheet.create({
 });
 
 export default function ServicesScreen() {
+  const { resident } = useAuth();
   const [subTab, setSubTab] = useState(0);
   const [marketCategory, setMarketCategory] = useState(0);
+  const [openTickets, setOpenTickets] = useState<any[]>([]);
+  const [completedTickets, setCompletedTickets] = useState<any[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(true);
+
+  useEffect(() => {
+    if (!resident) return;
+    async function loadTickets() {
+      setLoadingTickets(true);
+      const [{ data: open }, { data: done }] = await Promise.all([
+        supabase
+          .from('maintenance_tickets')
+          .select('id, category, description, status, priority, created_at')
+          .eq('resident_id', resident.id)
+          .in('status', ['open', 'in_progress'])
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('maintenance_tickets')
+          .select('id, category, description, status, priority, created_at')
+          .eq('resident_id', resident.id)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .limit(5),
+      ]);
+      setOpenTickets(open ?? []);
+      setCompletedTickets(done ?? []);
+      setLoadingTickets(false);
+    }
+    loadTickets();
+  }, [resident]);
 
   const filteredVendors = marketCategory === 0
     ? VENDORS
@@ -176,8 +196,18 @@ export default function ServicesScreen() {
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.pad}>
               {/* Open tickets */}
-              <Text style={styles.sectionTitle}>Open Tickets ({OPEN_TICKETS.length})</Text>
-              {OPEN_TICKETS.map((t) => (
+              <Text style={styles.sectionTitle}>Open Tickets ({openTickets.length})</Text>
+              {loadingTickets ? (
+                <Text style={{ color: COLORS.textTertiary, fontSize: 13, fontFamily: 'Inter_400Regular', marginBottom: 8 }}>
+                  Loading…
+                </Text>
+              ) : openTickets.length === 0 ? (
+                <View style={[styles.ticketCard, { justifyContent: 'center', paddingVertical: 24 }]}>
+                  <Text style={{ color: COLORS.textTertiary, fontSize: 13, fontFamily: 'Inter_400Regular', textAlign: 'center' }}>
+                    No open tickets — great news! 🎉
+                  </Text>
+                </View>
+              ) : openTickets.map((t) => (
                 <TouchableOpacity
                   key={t.id}
                   style={styles.ticketCard}
@@ -185,7 +215,7 @@ export default function ServicesScreen() {
                   onPress={() => router.push(`/maintenance/${t.id}` as any)}
                 >
                   <View style={styles.ticketLeft}>
-                    <Text style={styles.ticketIcon}>{t.icon}</Text>
+                    <Text style={styles.ticketIcon}>{ticketIcon(t.category)}</Text>
                   </View>
                   <View style={styles.flex1}>
                     <View style={styles.ticketHeader}>
@@ -193,7 +223,7 @@ export default function ServicesScreen() {
                       <StatusChip status={t.status} />
                     </View>
                     <Text style={styles.ticketDesc} numberOfLines={2}>{t.description}</Text>
-                    <Text style={styles.ticketTime}>{t.time}</Text>
+                    <Text style={styles.ticketTime}>{timeAgo(t.created_at)}</Text>
                   </View>
                   <ChevronRight size={16} color={COLORS.textTertiary} strokeWidth={2} />
                 </TouchableOpacity>
@@ -201,10 +231,14 @@ export default function ServicesScreen() {
 
               {/* Completed */}
               <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Completed</Text>
-              {COMPLETED_TICKETS.map((t) => (
+              {!loadingTickets && completedTickets.length === 0 ? (
+                <Text style={{ color: COLORS.textTertiary, fontSize: 13, fontFamily: 'Inter_400Regular' }}>
+                  No completed tickets yet.
+                </Text>
+              ) : completedTickets.map((t) => (
                 <View key={t.id} style={[styles.ticketCard, styles.ticketCardDone]}>
                   <View style={[styles.ticketLeft, { backgroundColor: '#F0FDF4' }]}>
-                    <Text style={styles.ticketIcon}>{t.icon}</Text>
+                    <Text style={styles.ticketIcon}>{ticketIcon(t.category)}</Text>
                   </View>
                   <View style={styles.flex1}>
                     <View style={styles.ticketHeader}>
@@ -212,7 +246,7 @@ export default function ServicesScreen() {
                       <StatusChip status={t.status} />
                     </View>
                     <Text style={styles.ticketDesc} numberOfLines={2}>{t.description}</Text>
-                    <Text style={styles.ticketTime}>{t.time}</Text>
+                    <Text style={styles.ticketTime}>{timeAgo(t.created_at)}</Text>
                   </View>
                 </View>
               ))}
