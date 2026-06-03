@@ -9,15 +9,17 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { X, ChevronRight, User, Truck, RotateCcw, Car } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import QRCode from 'react-native-qrcode-svg';
 import { COLORS } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -92,15 +94,19 @@ const badge = StyleSheet.create({
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function VisitorsScreen() {
+  const { resident } = useAuth();
+
   // List state
   const [passes, setPasses] = useState<VisitorPass[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-  // Unit resolution
-  const [unitId, setUnitId] = useState<string | null>(null);
-  const [unitLabel, setUnitLabel] = useState<string>('Sevenhood Tower');
+  // Unit resolution — derived from AuthContext
+  const unitId    = (resident?.unit_id as string | null) ?? null;
+  const unitLabel = resident?.units
+    ? `Unit ${(resident.units as any).unit_number} — ${(resident.units as any).buildings?.name ?? 'Sevenhood'}`
+    : 'Sevenhood';
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -117,38 +123,6 @@ export default function VisitorsScreen() {
   const [selectedDays, setSelectedDays] = useState<Set<string>>(new Set());
   const [plateNumber, setPlateNumber] = useState('');
   const [endDate, setEndDate] = useState('');
-
-  // ── Resolve unit_id from AsyncStorage or fallback ──────────────────────────
-  useEffect(() => {
-    (async () => {
-      try {
-        const stored = await AsyncStorage.getItem('resident_unit_id');
-        if (stored) {
-          setUnitId(stored);
-          // Also try to get a label
-          const { data } = await supabase
-            .from('units')
-            .select('unit_number')
-            .eq('id', stored)
-            .single();
-          if (data?.unit_number) setUnitLabel(`Unit ${data.unit_number} — Sevenhood Tower`);
-        } else {
-          // Fallback: pick the first unit from DB
-          const { data } = await supabase
-            .from('units')
-            .select('id, unit_number')
-            .limit(1)
-            .single();
-          if (data) {
-            setUnitId(data.id);
-            setUnitLabel(`Unit ${data.unit_number} — Sevenhood Tower`);
-          }
-        }
-      } catch {
-        // silently ignore — unit stays null, insert will be skipped
-      }
-    })();
-  }, []);
 
   // ── Fetch passes ───────────────────────────────────────────────────────────
   const fetchPasses = useCallback(async () => {
@@ -607,11 +581,15 @@ export default function VisitorsScreen() {
                 <Text style={modal.successTitle}>Pass Ready!</Text>
                 <Text style={modal.successSub}>Share this code with your visitor</Text>
 
-                {/* QR placeholder */}
+                {/* Real QR Code */}
                 <View style={modal.qrBox}>
-                  <View style={modal.qrPlaceholder}>
-                    <Text style={modal.qrIcon}>⬛</Text>
-                    <Text style={modal.qrLabel}>QR Code</Text>
+                  <View style={modal.qrFrame}>
+                    <QRCode
+                      value={`sevenhood://pass/${generatedPassId ?? 'unknown'}`}
+                      size={160}
+                      color={COLORS.primary}
+                      backgroundColor="#fff"
+                    />
                   </View>
                 </View>
 
@@ -632,10 +610,38 @@ export default function VisitorsScreen() {
 
                 {/* Share buttons */}
                 <View style={modal.shareRow}>
-                  <TouchableOpacity style={modal.shareBtn} activeOpacity={0.85}>
+                  <TouchableOpacity
+                    style={modal.shareBtn}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      const code = generatedPassId
+                        ? generatedPassId.replace(/-/g, '').slice(0, 6).toUpperCase()
+                        : '------';
+                      const msg = encodeURIComponent(
+                        `Your Sevenhood access pass is ready!\nCode: ${code}\nLink: sevenhood://pass/${generatedPassId}`
+                      );
+                      Linking.openURL(`whatsapp://send?text=${msg}`).catch(() =>
+                        Alert.alert('WhatsApp not installed', 'Please install WhatsApp to share.')
+                      );
+                    }}
+                  >
                     <Text style={modal.shareBtnText}>💬 WhatsApp</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[modal.shareBtn, modal.shareBtnSms]} activeOpacity={0.85}>
+                  <TouchableOpacity
+                    style={[modal.shareBtn, modal.shareBtnSms]}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      const code = generatedPassId
+                        ? generatedPassId.replace(/-/g, '').slice(0, 6).toUpperCase()
+                        : '------';
+                      const msg = encodeURIComponent(
+                        `Your Sevenhood access pass code: ${code}`
+                      );
+                      Linking.openURL(`sms:?body=${msg}`).catch(() =>
+                        Alert.alert('SMS unavailable', 'Cannot open Messages on this device.')
+                      );
+                    }}
+                  >
                     <Text style={modal.shareBtnTextSms}>📱 SMS</Text>
                   </TouchableOpacity>
                 </View>
@@ -894,19 +900,18 @@ const modal = StyleSheet.create({
     marginBottom: 24,
   },
   qrBox: { alignItems: 'center', marginBottom: 24 },
-  qrPlaceholder: {
-    width: 160,
-    height: 160,
-    backgroundColor: COLORS.background,
+  qrFrame: {
+    padding: 16,
+    backgroundColor: '#fff',
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: COLORS.border,
-    borderStyle: 'dashed',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  qrIcon: { fontSize: 56 },
-  qrLabel: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'Inter_500Medium', marginTop: 4 },
   codeRow: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 8 },
   codeBox: {
     width: 44,

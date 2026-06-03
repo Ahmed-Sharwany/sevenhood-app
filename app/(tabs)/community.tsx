@@ -18,6 +18,7 @@ import { Heart, MessageCircle, Send, Plus, Search, Calendar, MapPin, Users, X } 
 import * as Haptics from 'expo-haptics';
 import { COLORS } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SUB_TABS = ['Feed', 'Events', 'Directory'];
 const FEED_FILTERS = ['Building', 'Compound', 'My Groups'];
@@ -102,10 +103,12 @@ function EmptyState({ message }: { message: string }) {
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function CommunityScreen() {
+  const { resident } = useAuth();
   const [subTab, setSubTab] = useState(0);
   const [feedFilter, setFeedFilter] = useState(0);
   const [search, setSearch] = useState('');
   const [rsvpd, setRsvpd] = useState<Set<string>>(new Set());
+  const [rsvpLoading, setRsvpLoading] = useState<Set<string>>(new Set());
 
   // Posts
   const [posts, setPosts] = useState<Post[]>([]);
@@ -179,20 +182,72 @@ export default function CommunityScreen() {
     setMembersLoading(false);
   }, []);
 
+  // ── Load existing RSVPs for this resident ───────────────────────────────────
+  useEffect(() => {
+    if (!resident?.id) return;
+    supabase
+      .from('event_attendees')
+      .select('event_id')
+      .eq('resident_id', resident.id)
+      .then(({ data }) => {
+        if (data) {
+          setRsvpd(new Set(data.map((r: any) => r.event_id)));
+        }
+      });
+  }, [resident?.id]);
+
   useEffect(() => {
     fetchPosts();
     fetchEvents();
     fetchMembers();
   }, [fetchPosts, fetchEvents, fetchMembers]);
 
-  // ── RSVP toggle ─────────────────────────────────────────────────────────────
-  const toggleRsvp = (id: string) => {
+  // ── RSVP toggle — persisted to event_attendees ───────────────────────────────
+  const toggleRsvp = async (id: string) => {
+    if (!resident?.id) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Optimistic update
+    const wasRsvpd = rsvpd.has(id);
     setRsvpd((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      wasRsvpd ? next.delete(id) : next.add(id);
       return next;
     });
+    setRsvpLoading((prev) => new Set(prev).add(id));
+
+    try {
+      if (wasRsvpd) {
+        // Remove RSVP
+        await supabase
+          .from('event_attendees')
+          .delete()
+          .eq('event_id', id)
+          .eq('resident_id', resident.id);
+      } else {
+        // Add RSVP
+        await supabase
+          .from('event_attendees')
+          .upsert({ event_id: id, resident_id: resident.id }, { onConflict: 'event_id,resident_id' });
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      // Revert optimistic update on error
+      setRsvpd((prev) => {
+        const next = new Set(prev);
+        wasRsvpd ? next.add(id) : next.delete(id);
+        return next;
+      });
+    } finally {
+      setRsvpLoading((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
   };
 
   // ── Submit new post ─────────────────────────────────────────────────────────
@@ -384,10 +439,15 @@ export default function CommunityScreen() {
                             onPress={() => toggleRsvp(event.id)}
                             style={[styles.rsvpBtn, isRsvpd && styles.rsvpBtnActive]}
                             activeOpacity={0.85}
+                            disabled={rsvpLoading.has(event.id)}
                           >
-                            <Text style={[styles.rsvpBtnText, isRsvpd && styles.rsvpBtnTextActive]}>
-                              {isRsvpd ? '✓ Going' : 'RSVP'}
-                            </Text>
+                            {rsvpLoading.has(event.id) ? (
+                              <ActivityIndicator size="small" color={isRsvpd ? '#fff' : COLORS.primary} />
+                            ) : (
+                              <Text style={[styles.rsvpBtnText, isRsvpd && styles.rsvpBtnTextActive]}>
+                                {isRsvpd ? '✓ Going' : 'RSVP'}
+                              </Text>
+                            )}
                           </TouchableOpacity>
                         </View>
                       </View>

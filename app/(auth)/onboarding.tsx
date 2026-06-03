@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Check, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, IMG } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -70,16 +71,21 @@ export default function OnboardingScreen() {
     });
   };
 
+  const finishOnboarding = async () => {
+    await AsyncStorage.setItem('onboarding_seen', 'true');
+    router.replace('/(auth)/login');
+  };
+
   const handleNext = () => {
     if (step < 2) {
       navigate(step + 1);
     } else {
-      router.replace('/(auth)/login');
+      finishOnboarding();
     }
   };
 
   const handleSkip = () => {
-    router.replace('/(auth)/login');
+    finishOnboarding();
   };
 
   return (
