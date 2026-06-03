@@ -10,12 +10,14 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { ArrowLeft, Save, User, Mail, Phone } from 'lucide-react-native';
+import { ArrowLeft, Save, User, Mail, Phone, Camera } from 'lucide-react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -23,9 +25,56 @@ import { supabase } from '@/lib/supabase';
 export default function ProfileEditScreen() {
   const { resident } = useAuth();
 
-  const [fullName, setFullName] = useState(resident?.full_name ?? '');
-  const [phone,    setPhone]    = useState(resident?.phone ?? '');
-  const [saving,   setSaving]   = useState(false);
+  const [fullName,   setFullName]   = useState(resident?.full_name ?? '');
+  const [phone,      setPhone]      = useState(resident?.phone ?? '');
+  const [avatarUri,  setAvatarUri]  = useState<string | null>(resident?.avatar_url as string ?? null);
+  const [saving,     setSaving]     = useState(false);
+  const [uploading,  setUploading]  = useState(false);
+
+  // ── Avatar upload ────────────────────────────────────────────────────────────
+  const handlePickAvatar = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please allow access to your photo library in Settings.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+    if (!resident?.id) return;
+
+    setUploading(true);
+    try {
+      const uri      = result.assets[0].uri;
+      const response = await fetch(uri);
+      const blob     = await response.blob();
+      const path     = `avatars/${resident.id}.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('images').getPublicUrl(path);
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}`; // cache-bust
+
+      await supabase.from('residents').update({ avatar_url: publicUrl }).eq('id', resident.id);
+      setAvatarUri(publicUrl);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err: any) {
+      Alert.alert('Upload failed', err.message ?? 'Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!fullName.trim()) {
@@ -80,14 +129,26 @@ export default function ProfileEditScreen() {
         </SafeAreaView>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-          {/* Avatar placeholder */}
+          {/* Avatar */}
           <View style={styles.avatarSection}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {fullName.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('')}
-              </Text>
-            </View>
-            <Text style={styles.avatarHint}>Photo upload coming soon</Text>
+            <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.85} style={styles.avatarWrap}>
+              {avatarUri ? (
+                <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>
+                    {fullName.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('')}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.cameraOverlay}>
+                {uploading
+                  ? <ActivityIndicator size="small" color="#fff" />
+                  : <Camera size={16} color="#fff" strokeWidth={2.5} />
+                }
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.avatarHint}>Tap to change photo</Text>
           </View>
 
           {/* Fields */}
@@ -203,12 +264,21 @@ const styles = StyleSheet.create({
   },
   content: { padding: 20, gap: 16, paddingBottom: 20 },
   avatarSection: { alignItems: 'center', paddingVertical: 8 },
+  avatarWrap: { position: 'relative', marginBottom: 10 },
   avatar: {
-    width: 80, height: 80, borderRadius: 28,
+    width: 88, height: 88, borderRadius: 30,
     backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center',
-    marginBottom: 10,
   },
-  avatarText: { color: '#fff', fontSize: 26, fontFamily: 'PlayfairDisplay_600SemiBold' },
+  avatarImage: {
+    width: 88, height: 88, borderRadius: 30,
+  },
+  avatarText: { color: '#fff', fontSize: 28, fontFamily: 'PlayfairDisplay_600SemiBold' },
+  cameraOverlay: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: COLORS.accent, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: '#fff',
+  },
   avatarHint: { color: COLORS.textTertiary, fontSize: 12, fontFamily: 'Inter_400Regular' },
   card: {
     backgroundColor: COLORS.surface, borderRadius: 20,

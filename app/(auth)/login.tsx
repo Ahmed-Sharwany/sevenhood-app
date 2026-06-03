@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,15 +10,24 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Mail, ArrowLeft } from 'lucide-react-native';
+import { Mail, ArrowLeft, KeyRound } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { COLORS } from '@/constants/colors';
-import { LogoMark } from '@/components/SevenHoodLogo';
+import { LogoLockup } from '@/components/SevenHoodLogo';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  isBiometricAvailable,
+  isBiometricEnabled,
+  getBiometricEmail,
+  getBiometricLabel,
+  authenticateWithBiometric,
+  enableBiometric,
+} from '@/lib/biometric';
 
 // ─── OTP digit input ──────────────────────────────────────────────────────────
 
@@ -81,11 +90,28 @@ export default function LoginScreen() {
   const [otpError, setOtpError] = useState('');
   const [verifying, setVerifying] = useState(false);
 
+  // Biometric
+  const [biometricReady,  setBiometricReady]  = useState(false);
+  const [biometricLabel,  setBiometricLabel]  = useState('Face ID / Touch ID');
+
   const digitRefs = useRef<Array<React.RefObject<TextInput | null>>>(
     Array.from({ length: 6 }, () => React.createRef<TextInput>())
   );
 
   const btnScale = useRef(new Animated.Value(1)).current;
+
+  // ── Check biometric availability on mount ──────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      const available = await isBiometricAvailable();
+      const enabled   = await isBiometricEnabled();
+      if (available && enabled) {
+        const label = await getBiometricLabel();
+        setBiometricLabel(label);
+        setBiometricReady(true);
+      }
+    })();
+  }, []);
 
   const animatePress = (cb?: () => void) => {
     Animated.sequence([
@@ -137,13 +163,33 @@ export default function LoginScreen() {
 
       if (error) {
         setOtpError(error);
-        // Clear digits and refocus first box
         setDigits(['', '', '', '', '', '']);
         setTimeout(() => digitRefs.current[0].current?.focus(), 100);
         return;
       }
 
-      router.replace('/(tabs)');
+      // Offer biometric enrollment if available but not yet set up
+      const available = await isBiometricAvailable();
+      const enabled   = await isBiometricEnabled();
+      if (available && !enabled) {
+        const label = await getBiometricLabel();
+        Alert.alert(
+          `Enable ${label}?`,
+          `Sign in faster next time using ${label} — no need to type your email.`,
+          [
+            { text: 'Not Now', style: 'cancel', onPress: () => router.replace('/(tabs)') },
+            {
+              text: 'Enable',
+              onPress: async () => {
+                await enableBiometric(email.trim().toLowerCase());
+                router.replace('/(tabs)');
+              },
+            },
+          ]
+        );
+      } else {
+        router.replace('/(tabs)');
+      }
     },
     [email, verifyOTP]
   );
@@ -180,11 +226,41 @@ export default function LoginScreen() {
     [digits]
   );
 
-  // ── Biometric (inactive placeholder) ──────────────────────────────────────
+  // ── Biometric sign-in ──────────────────────────────────────────────────────
 
-  const handleBiometric = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Biometric auth coming soon — no-op for now
+  const handleBiometric = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    if (!biometricReady) {
+      // Biometrics not set up yet — explain how to enable
+      Alert.alert(
+        'Face ID / Touch ID',
+        'Sign in with your email first. After logging in, you\'ll be asked if you want to enable biometric sign-in.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    const storedEmail = await getBiometricEmail();
+    if (!storedEmail) return;
+
+    const success = await authenticateWithBiometric();
+    if (!success) return;
+
+    // Biometric passed — auto-send OTP to stored email
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setEmail(storedEmail);
+    setSendingOTP(true);
+    const { error } = await sendOTP(storedEmail);
+    setSendingOTP(false);
+
+    if (error) {
+      Alert.alert('Sign-in failed', error);
+      return;
+    }
+
+    setStep('otp');
+    setTimeout(() => digitRefs.current[0].current?.focus(), 300);
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -203,11 +279,7 @@ export default function LoginScreen() {
       >
         {/* Logo */}
         <View style={styles.logoRow}>
-          <LogoMark size={44} />
-          <View style={styles.wordmarkRow}>
-            <Text style={styles.wordmarkSeven}>Seven</Text>
-            <Text style={styles.wordmarkHood}>hood</Text>
-          </View>
+          <LogoLockup variant="dark" size={1} />
         </View>
 
         {/* ── EMAIL STEP ────────────────────────────────────────────── */}
@@ -278,14 +350,31 @@ export default function LoginScreen() {
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Biometric button (inactive) */}
+            {/* Biometric button */}
             <TouchableOpacity
               onPress={handleBiometric}
               activeOpacity={0.85}
-              style={styles.biometricBtn}
+              style={[styles.biometricBtn, biometricReady && styles.biometricBtnActive]}
             >
-              <Text style={styles.biometricIcon}>🔒</Text>
-              <Text style={styles.biometricText}>Face ID / Touch ID</Text>
+              <Text style={styles.biometricIcon}>{biometricReady ? '🔓' : '🔒'}</Text>
+              <Text style={[styles.biometricText, biometricReady && styles.biometricTextActive]}>
+                {biometricReady ? `Sign in with ${biometricLabel}` : 'Face ID / Touch ID'}
+              </Text>
+              {biometricReady && (
+                <View style={styles.biometricBadge}>
+                  <Text style={styles.biometricBadgeText}>ON</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Activation code entry point */}
+            <TouchableOpacity
+              onPress={() => router.push('/(auth)/activate')}
+              activeOpacity={0.8}
+              style={styles.activationBtn}
+            >
+              <KeyRound size={16} color={COLORS.accent} strokeWidth={2} />
+              <Text style={styles.activationText}>I have an activation code</Text>
             </TouchableOpacity>
 
             {/* Create account placeholder */}
@@ -403,22 +492,6 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 56,
   },
-  wordmarkRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  wordmarkSeven: {
-    color: COLORS.primary,
-    fontSize: 22,
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    letterSpacing: 1,
-  },
-  wordmarkHood: {
-    color: COLORS.accent,
-    fontSize: 22,
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    letterSpacing: 1,
-  },
   backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -433,9 +506,10 @@ const styles = StyleSheet.create({
   },
   heading: {
     color: COLORS.primary,
-    fontSize: 32,
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    lineHeight: 40,
+    fontSize: 30,
+    fontFamily: 'Inter_600SemiBold',
+    lineHeight: 38,
+    letterSpacing: -0.5,
     marginBottom: 8,
   },
   subheading: {
@@ -566,7 +640,7 @@ const styles = StyleSheet.create({
     height: 58,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: COLORS.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -577,13 +651,30 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  biometricIcon: {
-    fontSize: 22,
+  biometricBtnActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: `${COLORS.primary}08`,
   },
+  biometricIcon: { fontSize: 22 },
   biometricText: {
-    color: COLORS.primary,
+    color: COLORS.textSecondary,
     fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
+  },
+  biometricTextActive: {
+    color: COLORS.primary,
+  },
+  biometricBadge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  biometricBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 0.5,
   },
   createRow: {
     flexDirection: 'row',
@@ -601,5 +692,23 @@ const styles = StyleSheet.create({
     color: COLORS.accent,
     fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
+  },
+  activationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 28,
+    paddingVertical: 14,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(201,165,107,0.30)',
+    backgroundColor: 'rgba(201,165,107,0.05)',
+  },
+  activationText: {
+    color: COLORS.accent,
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 0.2,
   },
 });

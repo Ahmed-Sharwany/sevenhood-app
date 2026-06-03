@@ -23,6 +23,12 @@
       "expo-router",
       "expo-font",
       [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Sevenhood to use Face ID for sign-in"
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/images/notification-icon.png",

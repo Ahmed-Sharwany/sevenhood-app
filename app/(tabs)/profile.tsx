@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Linking,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -211,14 +212,22 @@ export default function ProfileScreen() {
         <SafeAreaView edges={['top']}>
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.avatarOuter}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{initials}</Text>
-              </View>
+            <TouchableOpacity
+              style={styles.avatarOuter}
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/profile-edit'); }}
+              activeOpacity={0.85}
+            >
+              {resident?.avatar_url ? (
+                <Image source={{ uri: resident.avatar_url as string }} style={styles.avatarImage} />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{initials}</Text>
+                </View>
+              )}
               <View style={styles.verifiedBadge}>
                 <CheckCircle size={16} color="#fff" fill={COLORS.success} strokeWidth={0} />
               </View>
-            </View>
+            </TouchableOpacity>
 
             <Text style={styles.name}>{displayName}</Text>
             <Text style={styles.unit}>{unitLabel}</Text>
@@ -300,6 +309,11 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2, shadowRadius: 16, elevation: 8,
+  },
+  avatarImage: {
+    width: 88, height: 88, borderRadius: 30,
+    shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2, shadowRadius: 16,
   },
   avatarText: { color: '#fff', fontSize: 28, fontFamily: 'PlayfairDisplay_600SemiBold' },
   verifiedBadge: {
