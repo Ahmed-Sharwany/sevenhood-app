@@ -29,10 +29,12 @@ interface Amenity {
   description: string | null;
   image_url: string | null;
   amenity_booking_rules?: {
-    open_time?: string;
-    close_time?: string;
-    slot_duration_mins?: number;
-    max_attendees?: number;
+    operating_hours_start?: string;   // 'HH:MM'
+    operating_hours_end?: string;     // 'HH:MM'
+    allowed_durations?: number[];     // minutes e.g. [30, 60, 90]
+    capacity?: number;
+    buffer_time_mins?: number;
+    auto_approve?: boolean;
   } | null;
 }
 
@@ -167,7 +169,7 @@ export default function BookingsScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     const rules    = selected.amenity_booking_rules;
-    const duration = rules?.slot_duration_mins ?? 60;
+    const duration = rules?.allowed_durations?.[0] ?? 60;
     const [h, m]   = selTime.split(':').map(Number);
     const endMins  = h * 60 + m + duration;
     const endTime  = `${String(Math.floor(endMins / 60)).padStart(2, '0')}:${String(endMins % 60).padStart(2, '0')}`;
@@ -213,7 +215,11 @@ export default function BookingsScreen() {
   const days  = getNext7Days();
   const rules = selected?.amenity_booking_rules;
   const slots = selected
-    ? generateSlots(rules?.open_time ?? '08:00', rules?.close_time ?? '22:00', rules?.slot_duration_mins ?? 60)
+    ? generateSlots(
+        rules?.operating_hours_start ?? '08:00',
+        rules?.operating_hours_end   ?? '22:00',
+        rules?.allowed_durations?.[0] ?? 60
+      )
     : [];
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -289,10 +295,10 @@ export default function BookingsScreen() {
                         )}
                         <View style={styles.amenityMeta}>
                           <Text style={styles.amenityMetaText}>
-                            {rules?.open_time ?? '08:00'} – {rules?.close_time ?? '22:00'}
+                            {a.amenity_booking_rules?.operating_hours_start ?? '08:00'} – {a.amenity_booking_rules?.operating_hours_end ?? '22:00'}
                           </Text>
-                          {rules?.max_attendees && (
-                            <Text style={styles.amenityMetaText}>· Max {rules.max_attendees} guests</Text>
+                          {a.amenity_booking_rules?.capacity && (
+                            <Text style={styles.amenityMetaText}>· Max {a.amenity_booking_rules.capacity} guests</Text>
                           )}
                         </View>
                       </View>
