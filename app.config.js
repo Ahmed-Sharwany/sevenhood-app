@@ -5,7 +5,4 @@ const baseConfig = require('./app.json');
 
 module.exports = {
   ...baseConfig.expo,
-  extra: {
-    replicateApiToken: process.env.REPLICATE_API_TOKEN ?? '',
-  },
 };

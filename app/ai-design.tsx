@@ -17,16 +17,12 @@ import { ArrowLeft, Camera, Sparkles, X, Download, RefreshCw } from 'lucide-reac
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import Constants from 'expo-constants';
 import { COLORS } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
 
-// ── Replicate config (token stored in .env, never committed to git) ───────────
-const REPLICATE_API_TOKEN: string =
-  (Constants.expoConfig?.extra?.replicateApiToken as string) ?? '';
-
-// adirik/interior-design — full SHA256 version hash
-const REPLICATE_MODEL_VERSION = '76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38';
+// ── All Replicate calls go through our secure Edge Function ──────────────────
+// The API token never leaves the server — it lives in Supabase secrets.
+const EDGE_FN = 'ai-design';
 
 const STYLE_PRESETS = [
   { id: 'minimal',      label: 'Minimal',      color: '#E8E4DF', textColor: '#6B6B6B',
@@ -134,15 +130,15 @@ export default function AIDesignScreen() {
     return data.publicUrl;
   };
 
-  // ── Poll Replicate until done ─────────────────────────────────────────────
+  // ── Poll via Edge Function until done ────────────────────────────────────
   const pollPrediction = async (predictionId: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const check = async () => {
         try {
-          const res  = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
-            headers: { Authorization: `Token ${REPLICATE_API_TOKEN}` },
+          const { data, error } = await supabase.functions.invoke(EDGE_FN, {
+            body: { action: 'poll', predictionId },
           });
-          const data = await res.json();
+          if (error) throw new Error(error.message);
 
           if (data.status === 'succeeded') {
             const output = Array.isArray(data.output) ? data.output[0] : data.output;
@@ -171,52 +167,33 @@ export default function AIDesignScreen() {
       Alert.alert('Choose a style', 'Please select a design style.');
       return;
     }
-    if (REPLICATE_API_TOKEN === 'YOUR_REPLICATE_TOKEN_HERE') {
-      Alert.alert(
-        'API Token Missing',
-        'Add your Replicate API token in app/ai-design.tsx to enable AI generation.\n\nGet one free at replicate.com',
-      );
-      return;
-    }
-
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setGenerating(true);
     setGeneratedUrl(null);
 
     try {
-      // 1. Upload photo
+      // 1. Upload photo to Supabase Storage
       const imageUrl = await uploadToSupabase(photos[0]);
 
       // 2. Build prompt
-      const styleObj  = STYLE_PRESETS.find(s => s.id === selectedStyle)!;
-      const roomStr   = selectedRoom ? `${selectedRoom.toLowerCase()}, ` : '';
-      const drillStr  = noDrill ? ', no drilling, no painting, renter-friendly changes only, removable décor' : '';
+      const styleObj   = STYLE_PRESETS.find(s => s.id === selectedStyle)!;
+      const roomStr    = selectedRoom ? `${selectedRoom.toLowerCase()}, ` : '';
+      const drillStr   = noDrill ? ', no drilling, no painting, renter-friendly changes only, removable décor' : '';
       const fullPrompt = `${roomStr}${styleObj.prompt}${drillStr}, photorealistic, high quality, 8k`;
 
-      // 3. Call Replicate with full version hash
+      // 3. Create prediction via secure Edge Function (Replicate token stays server-side)
       setStatusMsg('Sending to AI...');
-      const res = await fetch('https://api.replicate.com/v1/predictions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Token ${REPLICATE_API_TOKEN}`,
-          'Content-Type': 'application/json',
+      const { data: prediction, error: createError } = await supabase.functions.invoke(EDGE_FN, {
+        body: {
+          action:  'create',
+          imageUrl,
+          prompt:  fullPrompt,
+          seed:    Math.floor(Math.random() * 1_000_000),
         },
-        body: JSON.stringify({
-          version: REPLICATE_MODEL_VERSION,
-          input: {
-            image:               imageUrl,
-            prompt:              fullPrompt,
-            negative_prompt:     'ugly, blurry, low quality, deformed, text, watermark',
-            guidance_scale:      15,
-            num_inference_steps: 50,
-            strength:            0.8,
-            seed:                Math.floor(Math.random() * 1000000),
-          },
-        }),
       });
 
-      const prediction = await res.json();
-      if (!prediction.id) throw new Error(prediction.detail ?? 'Failed to start prediction');
+      if (createError) throw new Error(createError.message);
+      if (!prediction?.id) throw new Error(prediction?.detail ?? 'Failed to start prediction');
 
       // 4. Poll for result
       const outputUrl = await pollPrediction(prediction.id);

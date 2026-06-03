@@ -6,10 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
   ArrowLeft,
@@ -116,10 +117,32 @@ const wbStyles = StyleSheet.create({
   },
 });
 
+type SnagItem = {
+  id: string;
+  description: string;
+  date: string;
+  status: string;
+  photo: string | null;
+};
+
+type InvoiceItem = {
+  id: string;
+  invoice_number: string;
+  total: number;
+  due_date: string;
+  status: string;
+};
+
 export default function PropertyScreen() {
-  const [activeTab, setActiveTab] = useState(0);
+  const params    = useLocalSearchParams<{ tab?: string }>();
+  const initTab   = params.tab ? parseInt(params.tab, 10) : 0;
+  const [activeTab, setActiveTab] = useState(isNaN(initTab) ? 0 : initTab);
   const { resident } = useAuth();
-  const [amenities, setAmenities] = useState<string[]>([]);
+  const [amenities,    setAmenities]    = useState<string[]>([]);
+  const [snags,        setSnags]        = useState<SnagItem[]>([]);
+  const [loadingSnags, setLoadingSnags] = useState(true);
+  const [invoices,     setInvoices]     = useState<InvoiceItem[]>([]);
+  const [loadingInv,   setLoadingInv]   = useState(true);
 
   const unit     = resident?.units as any;
   const building = unit?.buildings as any;
@@ -138,6 +161,48 @@ export default function PropertyScreen() {
         }
       });
   }, [building?.id]);
+
+  // Fetch real snags (maintenance tickets with type 'snag' or first 10 tickets)
+  useEffect(() => {
+    if (!resident?.id) return;
+    setLoadingSnags(true);
+    supabase
+      .from('maintenance_tickets')
+      .select('id, title, description, status, created_at, photo_url')
+      .eq('resident_id', resident.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) {
+          setSnags(data.map((t: any) => ({
+            id:          t.id,
+            description: t.title ?? t.description ?? 'Maintenance request',
+            date:        new Date(t.created_at).toLocaleDateString('en-SA', { day: '2-digit', month: 'short', year: 'numeric' }),
+            status:      t.status ?? 'pending',
+            photo:       t.photo_url ?? null,
+          })));
+        }
+        setLoadingSnags(false);
+      });
+  }, [resident?.id]);
+
+  // Fetch service charge invoices
+  useEffect(() => {
+    if (!resident?.email) return;
+    setLoadingInv(true);
+    // Invoices are linked via accounts table (same email as resident)
+    supabase
+      .from('invoices')
+      .select('id, invoice_number, total, due_date, status')
+      .order('due_date', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setInvoices(data);
+        }
+        setLoadingInv(false);
+      });
+  }, [resident?.email]);
 
   // Build header info from real data
   const heroImage   = building?.image_url ?? IMG.buildingDusk;
@@ -208,9 +273,9 @@ export default function PropertyScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 0 && <OverviewTab unit={unit} building={building} project={project} amenities={amenities} />}
         {activeTab === 1 && <ContractsTab />}
-        {activeTab === 2 && <PaymentsTab />}
+        {activeTab === 2 && <PaymentsTab invoices={invoices} loading={loadingInv} />}
         {activeTab === 3 && <WarrantiesTab />}
-        {activeTab === 4 && <SnagsTab />}
+        {activeTab === 4 && <SnagsTab snags={snags} loading={loadingSnags} residentId={resident?.id ?? null} />}
         {activeTab === 5 && <DrawingsTab />}
       </ScrollView>
     </View>
@@ -286,10 +351,69 @@ function ContractsTab() {
   );
 }
 
-function PaymentsTab() {
-  const total = PAYMENTS.reduce((s, p) => s + parseInt(p.amount.replace(/\D/g, '')), 0);
-  const paid = PAYMENTS.filter((p) => p.status === 'paid').reduce((s, p) => s + parseInt(p.amount.replace(/\D/g, '')), 0);
+function PaymentsTab({ invoices, loading }: { invoices: InvoiceItem[]; loading: boolean }) {
+  // Fall back to sample data if no real invoices loaded yet
+  const displayData = invoices.length > 0 ? null : PAYMENTS;
 
+  const sar = (n: number) =>
+    `SAR ${new Intl.NumberFormat('en-SA', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n)}`;
+
+  if (loading) {
+    return (
+      <View style={[tabStyles.container, { alignItems: 'center', paddingTop: 40 }]}>
+        <ActivityIndicator size="large" color={COLORS.accent} />
+      </View>
+    );
+  }
+
+  if (invoices.length > 0) {
+    const total     = invoices.reduce((s, i) => s + Number(i.total), 0);
+    const paid      = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + Number(i.total), 0);
+    const remaining = total - paid;
+
+    return (
+      <View style={tabStyles.container}>
+        <View style={tabStyles.paymentSummary}>
+          <View>
+            <Text style={tabStyles.summaryLabel}>Total</Text>
+            <Text style={tabStyles.summaryValue}>{sar(total)}</Text>
+          </View>
+          <View>
+            <Text style={tabStyles.summaryLabel}>Paid</Text>
+            <Text style={[tabStyles.summaryValue, { color: COLORS.success }]}>{sar(paid)}</Text>
+          </View>
+          <View>
+            <Text style={tabStyles.summaryLabel}>Outstanding</Text>
+            <Text style={[tabStyles.summaryValue, { color: COLORS.warning }]}>{sar(remaining)}</Text>
+          </View>
+        </View>
+
+        {invoices.map((inv) => (
+          <View key={inv.id} style={tabStyles.paymentRow}>
+            <View style={tabStyles.paymentStatusIcon}>
+              {inv.status === 'paid' ? (
+                <CheckCircle size={18} color={COLORS.success} />
+              ) : (
+                <Clock size={18} color={COLORS.warning} />
+              )}
+            </View>
+            <View style={styles.flex1}>
+              <Text style={tabStyles.paymentName}>{inv.invoice_number}</Text>
+              <Text style={tabStyles.paymentDue}>Due {new Date(inv.due_date).toLocaleDateString('en-SA', { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
+            </View>
+            <View style={tabStyles.paymentRight}>
+              <Text style={tabStyles.paymentAmount}>{sar(Number(inv.total))}</Text>
+              <StatusChip status={inv.status} />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  // Fallback to placeholder data
+  const total = PAYMENTS.reduce((s, p) => s + parseInt(p.amount.replace(/\D/g, '')), 0);
+  const paid  = PAYMENTS.filter((p) => p.status === 'paid').reduce((s, p) => s + parseInt(p.amount.replace(/\D/g, '')), 0);
   return (
     <View style={tabStyles.container}>
       <View style={tabStyles.paymentSummary}>
@@ -306,15 +430,10 @@ function PaymentsTab() {
           <Text style={[tabStyles.summaryValue, { color: COLORS.warning }]}>SAR {(total - paid).toLocaleString()}</Text>
         </View>
       </View>
-
       {PAYMENTS.map((p) => (
         <View key={p.id} style={tabStyles.paymentRow}>
           <View style={tabStyles.paymentStatusIcon}>
-            {p.status === 'paid' ? (
-              <CheckCircle size={18} color={COLORS.success} />
-            ) : (
-              <Clock size={18} color={COLORS.warning} />
-            )}
+            {p.status === 'paid' ? <CheckCircle size={18} color={COLORS.success} /> : <Clock size={18} color={COLORS.warning} />}
           </View>
           <View style={styles.flex1}>
             <Text style={tabStyles.paymentName}>{p.installment}</Text>
@@ -361,24 +480,52 @@ function WarrantiesTab() {
   );
 }
 
-function SnagsTab() {
+function SnagsTab({ snags, loading, residentId }: { snags: SnagItem[]; loading: boolean; residentId: string | null }) {
+  if (loading) {
+    return (
+      <View style={[tabStyles.container, { alignItems: 'center', paddingTop: 40 }]}>
+        <ActivityIndicator size="large" color={COLORS.accent} />
+      </View>
+    );
+  }
+
+  const displaySnags = snags.length > 0 ? snags : SNAGS.map(s => ({ ...s, photo: s.photo }));
+
   return (
     <View style={tabStyles.container}>
-      <TouchableOpacity style={tabStyles.addSnagBtn} activeOpacity={0.85}>
+      <TouchableOpacity
+        style={tabStyles.addSnagBtn}
+        activeOpacity={0.85}
+        onPress={() => router.push('/maintenance/new')}
+      >
         <Plus size={18} color="#fff" strokeWidth={2.5} />
-        <Text style={tabStyles.addSnagText}>Add Snag</Text>
+        <Text style={tabStyles.addSnagText}>Report an Issue</Text>
       </TouchableOpacity>
 
-      {SNAGS.map((s) => (
-        <View key={s.id} style={tabStyles.snagCard}>
-          <Image source={{ uri: s.photo }} style={tabStyles.snagPhoto} resizeMode="cover" />
-          <View style={styles.flex1}>
-            <Text style={tabStyles.snagDesc} numberOfLines={2}>{s.description}</Text>
-            <Text style={tabStyles.snagDate}>{s.date}</Text>
-          </View>
-          <StatusChip status={s.status} />
+      {displaySnags.length === 0 ? (
+        <View style={tabStyles.emptyState}>
+          <Text style={tabStyles.emptyIcon}>✅</Text>
+          <Text style={tabStyles.emptyTitle}>No Issues Reported</Text>
+          <Text style={tabStyles.emptyDesc}>Your unit has no open maintenance requests.</Text>
         </View>
-      ))}
+      ) : (
+        displaySnags.map((s) => (
+          <View key={s.id} style={tabStyles.snagCard}>
+            {s.photo ? (
+              <Image source={{ uri: s.photo }} style={tabStyles.snagPhoto} resizeMode="cover" />
+            ) : (
+              <View style={[tabStyles.snagPhoto, { backgroundColor: COLORS.border, alignItems: 'center', justifyContent: 'center' }]}>
+                <Text style={{ fontSize: 20 }}>🔧</Text>
+              </View>
+            )}
+            <View style={styles.flex1}>
+              <Text style={tabStyles.snagDesc} numberOfLines={2}>{s.description}</Text>
+              <Text style={tabStyles.snagDate}>{s.date}</Text>
+            </View>
+            <StatusChip status={s.status} />
+          </View>
+        ))
+      )}
     </View>
   );
 }
@@ -757,6 +904,23 @@ const tabStyles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 8,
+  },
+  emptyIcon: { fontSize: 40 },
+  emptyTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  emptyDesc: {
+    color: COLORS.textTertiary,
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
   },
   snagCard: {
     backgroundColor: COLORS.surface,
